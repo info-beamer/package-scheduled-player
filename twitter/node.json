@@ -1,0 +1,170 @@
+{
+    "name": "Plugin: Twitter",
+    "permissions": {
+        "network": "Needs to access twitter API"
+    },
+    "deferred": [
+        "content.lua"
+    ],
+    "options": [{
+        "title": "Twitter",
+        "type": "section"
+    }, {
+        "title": "Mode",
+        "ui_width": 3,
+        "name": "mode",
+        "type": "select",
+        "options": [
+            ["timeline", "Show user tweets"],
+            ["favs", "Show user likes"],
+            ["search", "Search tweets"]
+        ],
+        "default": "search"
+    }, {
+        "title": "Query/Username",
+        "ui_width": 3,
+        "name": "query",
+        "type": "string",
+        "default": "infobeamer"
+    }, {
+        "title": "Number of tweets",
+        "ui_width": 3,
+        "name": "count",
+        "type": "select",
+        "options": [
+            [10, "10 tweets"],
+            [20, "20 (default)"],
+            [40, "40 tweets"],
+            [80, "80 tweets"]
+        ],
+        "default": 20
+    }, {
+        "title": "Poll interval",
+        "ui_width": 3,
+        "name": "poll_interval",
+        "type": "select",
+        "options": [
+            ["streaming", "Streaming (only for search/timeline)"],
+            [0, "Do not poll (use bundled tweets)"],
+            [2, "2 Minutes"],
+            [5, "5 Minutes (default)"],
+            [10, "10 Minutes"]
+        ],
+        "default": 5
+    }, {
+        "title": "Exlude tweets before",
+        "ui_width": 3,
+        "name": "not_before",
+        "type": "string",
+        "default": "01.01.2016",
+        "hint": "Please use the DD.MM.YYYY format"
+    }, {
+        "title": "Filter garbage",
+        "ui_width": 3,
+        "hint": "Remote RT/default profiles, dots and garbage profiles",
+        "name": "filter_garbage",
+        "type": "boolean",
+        "default": true 
+    }, {
+        "title": "Broadcast to scroller",
+        "ui_width": 3,
+        "name": "include_in_scroller",
+        "hint": "Add all tweets as content to the scroller",
+        "type": "boolean",
+        "default": true
+    }, 
+    
+    {
+        "title": "Presentation",
+        "type": "section"
+    },
+    
+    
+    {
+        "title": "Font",
+        "ui_width": 3,
+        "name": "font",
+        "type": "font",
+        "doc_link": true,
+        "default": "default-font.ttf"
+    }, {
+        "title": "Shading",
+        "ui_width": 3,
+        "name": "shading",
+        "type": "select",
+        "options": [
+            [0.0, "No Shading"],
+            [0.1, "Barely visible"],
+            [0.3, "Light"],
+            [0.5, "Medium"],
+            [0.8, "Dark"],
+            [0.9, "Very dark"],
+            [1.0, "Solid"]
+        ],
+        "default": 0.0
+    }, {
+        "title": "Margin",
+        "ui_width": 3,
+        "name": "margin",
+        "type": "select",
+        "options": [
+            [0, "0"],
+            [10, "10"],
+            [20, "20"],
+            [30, "30"],
+            [40, "40"]
+        ],
+        "default": 10
+    }, {
+        "title": "Logo",
+        "ui_width": 3,
+        "name": "show_logo",
+        "type": "boolean",
+        "default": true 
+    }, {
+        "title": "Profile Color",
+        "ui_width": 3,
+        "name": "profile_color",
+        "type": "color",
+        "default": [1,1,1,1]
+    }, {
+        "title": "Tweet Color",
+        "ui_width": 3,
+        "name": "tweet_color",
+        "type": "color",
+        "default": [1,1,1,1]
+    },
+
+
+    {
+        "title": "Authentication",
+        "type": "section"
+    }, {
+        "title": "API Key",
+        "ui_width": 6,
+        "name": "consumer_key",
+        "type": "string",
+        "default": ""
+    },{
+        "title": "API Secret",
+        "ui_width": 6,
+        "name": "consumer_secret",
+        "type": "string",
+        "default": ""
+    }, {
+        "title": "Access Token",
+        "ui_width": 6,
+        "name": "access_token",
+        "type": "string",
+        "default": ""
+    },{
+        "title": "Access Token Secret",
+        "ui_width": 6,
+        "name": "access_token_secret",
+        "type": "string",
+        "default": ""
+    }],
+    "deferred": [
+        "tile.lua"
+    ]
+}

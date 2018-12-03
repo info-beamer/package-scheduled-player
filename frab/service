@@ -1,0 +1,92 @@
+#!/usr/bin/python
+import sys
+sys.path.insert(0, 'dependencies.zip')
+import traceback
+import time
+import pytz
+from calendar import timegm
+from datetime import datetime, timedelta
+from operator import itemgetter
+
+from hosted import config, node
+import importer
+
+config.restart_on_update()
+
+tz = pytz.timezone(config.timezone)
+
+d, m, y = config.day0.split('.')
+BASE_DAY = datetime(int(y), int(m), int(d))
+
+try:
+    sim_date, sim_time = config.time.strip().split()
+    d, m, y = sim_date.split('.')
+    ho, mi = sim_time.split(':')
+    diff = datetime(int(y), int(m), int(d), int(ho), int(mi), 00) - datetime.utcnow() 
+except:
+    diff = timedelta()
+print >>sys.stderr, "timedelta for simulation: %r" % (diff,)
+
+def current_time():
+    utc_now = datetime.now(pytz.utc) + diff
+    timestamp = timegm(utc_now.timetuple()) + utc_now.microsecond / 1000000.
+    return utc_now, timestamp
+
+def send_day(utc_now, ts):
+    local_now = utc_now.astimezone(tz)
+    now = local_now.replace(tzinfo=None)
+
+    day = (now - BASE_DAY).days
+    node.send('/day:%d' % day)
+
+def main():
+    while 1:
+        now, ts = current_time()
+        if now.year < 2000:
+            print >>sys.stderr, "too soon"
+            time.sleep(1)
+            continue
+
+        events = []
+        for schedule in config.schedule_urls:
+            print >>sys.stderr, "fetching %s" % schedule['url']
+            events.extend(importer.get_schedule(schedule['url'], schedule['group']))
+            print >>sys.stderr, "done. now ", len(events)
+
+        if not events:
+            print >>sys.stderr, "no events" 
+            time.sleep(60)
+            continue
+
+        events.sort(key=itemgetter('start_unix'))
+
+        node.write_json("schedule.json", [
+            dict(
+                duration = event['duration'],
+                lang = event['lang'],
+                place = event['place'],
+                abstract = event['abstract'],
+                speakers = [s for s in event['speakers'] if s],
+                start_str = event['start_str'],
+                title = event['title'],
+                group = event['group'],
+                start_unix = event['start_unix'],
+                end_unix = event['end_unix'],
+                id = event['id'],
+            ) for event in sorted(events, key=itemgetter('start_unix'))
+        ])
+
+        print >>sys.stderr, "updated schedule"
+
+        deadline = time.time() + 60*10
+        while time.time() < deadline:
+            utc_now, ts = current_time()
+            send_day(utc_now, ts)
+            time.sleep(10)
+
+if __name__ == "__main__":
+    try:
+        main()
+    except:
+        traceback.print_exc()
+        time.sleep(30)

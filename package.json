@@ -1,0 +1,10 @@
+{
+    "name": "Scheduled Player",
+    "author": "Florian Wesch <fw@info-beamer.com>",
+    "desc": "A schedulable playlist player with custom pages, plugins and animations",
+    "version": "beta15",
+    "lifecycle": "beta",
+    "runtime": {
+        "outside_sources": true
+    }
+}

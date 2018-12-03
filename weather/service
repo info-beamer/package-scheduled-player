@@ -1,0 +1,24 @@
+#!/usr/bin/python
+import traceback, time
+from hosted import api, config, node
+
+config.restart_on_update()
+
+def update_weather():
+    node.write_json("weather.json", api.weather.get(params=dict(
+        lat = config.lat,
+        lon = config.lon,
+    )))
+
+def main():
+    while 1:
+        try:
+            if config.lat != 0 and config.lon != 0:
+                update_weather()
+        except:
+            traceback.print_exc()
+        finally:
+            time.sleep(360)
+
+if __name__ == "__main__":
+    main()

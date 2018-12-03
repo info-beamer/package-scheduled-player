@@ -1,0 +1,117 @@
+Unless otherwise (see below) noted:
+
+    BSD 2-Clause License
+
+    Copyright (c) 2017,2018 Florian Wesch <fw@dividuum.de>
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this
+      list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+    SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+package.png
+    Icon made by Egor Rumyantsev
+    Creative Commons BY 3.0
+    https://www.flaticon.com/authors/egor-rumyantsev
+
+default-font.ttf
+    Originally called OpenSansEmoji.ttf
+    Apache 2.0 licenced
+    https://github.com/MorbZ/OpenSansEmoji
+
+default-font-bold.ttf
+    Part of OpenSans
+    Apache 2.0 licensed
+    https://fonts.google.com/specimen/Open+Sans
+
+vue.js/juex.js
+    Part of vue.js
+    MIT licensed
+    Learn more at https://vuejs.org/
+
+package-header.jpg
+    CC0
+    https://pixabay.com/en/world-thing-color-782536/
+
+ibquery.py
+    BSD2
+    https://github.com/info-beamer/tools
+
+hosted.py / hosted.js
+    Part of the info-beamer hosted SDK
+    BSD2
+    https://github.com/info-beamer/package-sdk
+
+weather/icon-*.png
+    Provided by met.no
+    Creative Commons 4.0 BY International
+    https://api.met.no/license_data.html
+
+md5.lua
+    MIT LICENSE
+    https://github.com/kikito/md5.lua
+
+easing.lua
+    MIT License
+    https://github.com/EmmanuelOga/easing
+
+Sortable.js
+    MIT
+    https://github.com/RubaXa/Sortable
+
+interact.min.js
+    MIT License
+    Copyright (c) 2012-2018 Taye Adeyemi <dev@taye.me>
+    https://github.com/taye/interact.js
+
+moment.min.js
+    MIT License
+    Copyright (c) JS Foundation and other contributors
+    https://github.com/moment/moment/
+
+vuedraggable.min.js
+    MIT License
+    Copyright (c) 2016 David Desmaisons
+    https://github.com/SortableJS/Vue.Draggable
+
+frab/dependencies.zip/dateutil:
+    MIT License
+    Copyright 2017- Paul Ganssle <paul@ganssle.io>
+    Copyright 2017- dateutil contributors (see AUTHORS file)
+    https://github.com/dateutil/dateutil/
+
+frab/dependencies.zip/defusedxml
+    PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
+    https://github.com/tiran/defusedxml
+
+twitter/dependencies.zip/tweepy
+    MIT License
+    Copyright (c) 2013-2014 Joshua Roesslein
+    https://github.com/tweepy/tweepy
+
+twitter/dependencies.zip/requests_oauthlib
+    ISC License
+    Copyright (c) 2014 Kenneth Reitz.
+    https://github.com/requests/requests-oauthlib
+
+twitter/dependencies.zip/oauthlib
+    BSD 3 clause
+    Copyright (c) 2018 The OAuthlib Community
+    https://github.com/oauthlib/oauthlib

@@ -1,0 +1,72 @@
+{
+    "name": "Plugin: Scroller",
+    "options": [{
+        "title": "Scroller",
+        "type": "section"
+    }, {
+        "title": "Font",
+        "ui_width": 3,
+        "name": "font",
+        "type": "font",
+        "doc_link": true,
+        "default": "default-font.ttf"
+    }, {
+        "title": "Font Color",
+        "ui_width": 2,
+        "type": "color",
+        "name": "color",
+        "default": [1,1,1,1]
+    }, {
+        "title": "Scroll Speed",
+        "ui_width": 2,
+        "name": "speed",
+        "type": "select",
+        "options": [
+            [ 50, "Slow"],
+            [100, "Normal"],
+            [140, "Faster"],
+            [200, "Even Faster"]
+        ],
+        "default": 100
+    },
+
+    {
+        "title": "Content",
+        "type": "section"
+    }, {
+        "title": "Scroller content and appearance",
+        "name": "texts",
+        "type": "list",
+        "itemname": "Text",
+        "items": [{
+            "title": "Text",
+            "ui_width": 6,
+            "name": "text",
+            "type": "string",
+            "default": ""
+        }, {
+            "title": "Font Color",
+            "hint": "Select a custom color for this item. Only used if not 0,0,0,0, so be sure to select a non-transparent alpha value.",
+            "ui_width": 3,
+            "type": "color",
+            "name": "color",
+            "default": [0,0,0,0]
+        }, {
+            "title": "Blink",
+            "ui_width": 1,
+            "type": "boolean",
+            "name": "blink",
+            "default": false
+        }, {
+            "title": "Show",
+            "hint": "Show this content in the scroller? If you want to add content but not show it yet, uncheck this option.",
+            "ui_width": 2,
+            "type": "boolean",
+            "name": "show",
+            "default": true
+        }]
+    }],
+    "deferred": [
+        "tile.lua"
+    ]
+}

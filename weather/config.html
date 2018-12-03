@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <!-- 
+
+
+  You can edit and test this configuration interface locally.
+  Just run (for example):
+
+    python -m SimpleHTTPServer
+
+  and point your browser to
+  
+    http://localhost:8000/config.html
+
+  You can learn more about custom configuration interfaces
+  at https://info-beamer.com/doc/package-reference#customconfigurationinterface
+
+  
+  -->
+  <head>
+    <meta charset="UTF-8">
+    <style>
+      .query {
+        margin-bottom: 20px;
+      }
+      .result-header {
+        margin-bottom: 5px;
+        color: #888;
+      }
+      .result {
+        border: 1px solid #eee;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        padding: 5px;
+      }
+      .result .name {
+        font-size: 120%;
+      }
+      .result .location {
+        color: #888;
+      }
+      .result button {
+        display: inline-block;
+        width: 30%;
+      }
+      .selected {
+        margin-bottom: 70px;
+      }
+      h3 {
+        margin-top: 0;
+        margin-bottom: 5px;
+      }
+      hr {
+        margin-top: 5px;
+        margin-bottom: 25px;
+      }
+      .disclaimer {
+        color: #aaa;
+        text-align: right;
+        font-size: 80%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id='app'>
+      <config-ui/>
+    </div>
+
+    <script type="text/x-template" id="config-ui">
+      <div>
+        <div class='selected' v-if="lat != 0">
+          <h3>Selected weather location</h3>
+          <hr/>
+          <div class='result'>
+            <div class='name'>{{name}}</div>
+            <div class='location'>
+              {{lat}}, {{lon}}
+              (<a :href='mapLink(lat, lon)' target='_new'>on map</a>)
+            </div>
+          </div>
+        </div>
+        <div v-else>
+          <h3>Search weather location</h3>
+        </div>
+
+        <div class="query input-group">
+          <div class="input-group-addon"><span class='glyphicon glyphicon-search'></span></div>
+          <input
+            class='form-control'
+            placeholder='Search for a location'
+            :value="query"
+            @keyup='onSearch($event.keyCode, $event.target.value)'
+          />
+        </div>
+
+        <div class='results' v-if='!searching'>
+          <div class='result-header' v-if='query != ""'>
+            <b>{{hits.length}}</b> hits found for <b>{{query}}</b>
+          </div>
+          <div class='result' v-for='hit in hits'>
+            <div class='name'>{{hit.name}}</div>
+            <div class='location'>
+              {{hit.lat}}, {{hit.lon}}
+              (<a :href='mapLink(hit.lat, hit.lon)' target='_new'>on map</a>)
+            </div>
+            <div class='text-right'>
+              <button
+                class='form-control btn btn-default'
+                @click="onSelect(hit)"
+              >Select this location</button>
+            </div>
+          </div>
+        </div>
+        <div v-else>
+          <div class='result-header'>
+            Searching for <b>{{query}}</b>...
+          </div>
+        </div>
+
+        <div class='disclaimer'>Weather data provided by met.no / location data by geonames</div>
+      </div>
+    </script>
+    <script>
+      MOCK_CONFIG = {
+      }
+    </script>
+    <script src="hosted.js"></script>
+    <script src="vue.js"></script>
+    <script src="vuex.js"></script>
+    <script src="config.js"></script>
+  </body>
+</html>

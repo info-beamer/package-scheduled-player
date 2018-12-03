@@ -1,0 +1,40 @@
+{
+    "name": "Plugin: Weather",
+    "permissions": {
+        "network": "needs API access"
+    },
+    "custom_ui": "config.html",
+    "options": [{
+        "title": "Location Lat",
+        "ui_width": 2,
+        "type": "float",
+        "name": "lat",
+        "default": 0
+    }, {
+        "title": "Location Lon",
+        "ui_width": 2,
+        "type": "float",
+        "name": "lon",
+        "default": 0
+    }, {
+        "title": "Location Name",
+        "ui_width": 4,
+        "type": "string",
+        "name": "name",
+        "default": ""
+    }, {
+        "title": "Search",
+        "type": "string",
+        "name": "query",
+        "default": ""
+    }, {
+        "title": "Font",
+        "ui_width": 3,
+        "name": "font",
+        "type": "font",
+        "default": "default-font.ttf"
+    }],
+    "deferred": [
+        "tile.lua"
+    ]
+}

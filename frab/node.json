@@ -1,0 +1,120 @@
+{
+    "name": "Plugin: Frab",
+    "permissions": {
+        "network": "Has to fetch schedule from remote site"
+    },
+    "options": [{
+        "title": "Frab Conference Plugin",
+        "type": "section"
+    }, {
+        "title": "Font",
+        "ui_width": 3,
+        "name": "font",
+        "type": "font",
+        "default": "silkscreen.ttf"
+    }, {
+        "title": "Info Font",
+        "ui_width": 3,
+        "name": "info_font",
+        "type": "font",
+        "default": "silkscreen.ttf"
+    }, 
+
+    
+    {
+        "title": "Scheduling",
+        "type": "section"
+    },{
+        "title": "Time Zone",
+        "ui_width": 4,
+        "name": "timezone",
+        "type": "select",
+        "hint": "The timezone",
+        "options": [
+            ["UTC", "UTC"],
+            ["Europe/Berlin", "Europa / Berlin"]
+        ],
+        "default": "UTC"
+    }, {
+        "title": "Day 0",
+        "ui_width": 4,
+        "name": "day0",
+        "type": "string",
+        "hint": "Day 0 (DD.MM.YYYY)",
+        "default": "26.12.2017"
+    }, {
+        "title": "Fahrplan Urls",
+        "name": "schedule_urls",
+        "doc_link": true,
+        "type": "list",
+        "itemname": "Url",
+        "hint": "List all fahrplans. They will be merged",
+        "items": [{
+            "title": "Url",
+            "ui_width": 9,
+            "name": "url",
+            "type": "string",
+            "default": "http://localhost/"
+        }, {
+            "title": "Group",
+            "ui_width": 3,
+            "name": "group",
+            "type": "select",
+            "options": [
+                ["primary", "Primary"],
+                ["secondary1", "Seconday 1"],
+                ["secondary2", "Seconday 2"],
+                ["secondary3", "Seconday 3"]
+            ],
+            "default": "primary"
+        }]
+    }, {
+        "title": "Rooms",
+        "name": "rooms",
+        "doc_link": true,
+        "type": "list",
+        "itemname": "Room",
+        "hint": "Room definitions",
+        "items": [{
+            "title": "Schedule Name",
+            "ui_width": 3,
+            "name": "name",
+            "type": "string",
+            "hint": "Name of this room in your schedule.xml export",
+            "default": ""
+        }, {
+            "title": "Display Name",
+            "ui_width": 3,
+            "name": "name_short",
+            "type": "string",
+            "hint": "This can use used to overwrite the 'Schedule Name' for display purposes. Leave empty to use 'Schedule Name'",
+            "default": ""
+        }, {
+            "title": "Serial",
+            "ui_width": 3,
+            "name": "serial",
+            "type": "device",
+            "default": ""
+        }, {
+            "title": "Group",
+            "ui_width": 3,
+            "name": "group",
+            "type": "select",
+            "options": [
+                ["*", "All"],
+                ["primary", "Primary"],
+                ["secondary1", "Seconday 1"],
+                ["secondary2", "Seconday 2"],
+                ["secondary3", "Seconday 3"]
+            ],
+            "default": "primary"
+        }, {
+            "title": "Info screen content",
+            "ui_width": 12,
+            "name": "info",
+            "type": "text",
+            "rows": 6,
+            "default": ""
+        }]
+    }]
+}

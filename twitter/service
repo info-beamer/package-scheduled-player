@@ -1,0 +1,88 @@
+#!/usr/bin/python
+import sys
+sys.path.insert(0, 'dependencies.zip')
+import time
+import traceback
+from datetime import datetime, date
+from Queue import Queue
+
+import tweepy
+from tweepy import OAuthHandler
+from tweepy.streaming import StreamListener
+from tweepy import Stream
+
+from hosted import config
+from twitter import cleanup, filter_and_save
+
+incoming = Queue()
+
+class StreamHandler(StreamListener):
+    """ A listener handles tweets are the received from the stream.
+    This is a basic listener that just prints received tweets to stdout.
+
+    """
+    def on_status(self, tweet):
+        # print >>sys.stderr, tweet
+        incoming.put(tweet)
+
+    def on_error(self, status):
+        print >>sys.stderr, "http status %r while fetching stream" % status
+
+def main():
+    config.restart_on_update()
+
+    # wait till the configuration is non-empty. hosted
+    # will restart this process when the configuration changes.
+    if not config.consumer_key or config.poll_interval == 0:
+        print >>sys.stderr, "waiting for a config change"
+        while 1: time.sleep(100000)
+
+    auth = OAuthHandler(config.consumer_key, config.consumer_secret)
+    auth.set_access_token(config.access_token, config.access_token_secret)
+    api = tweepy.API(auth)
+
+    try:
+        not_before = datetime.strptime(config.not_before, "%d.%m.%Y").date()
+    except ValueError:
+        traceback.print_exc()
+        not_before = date(1,1,1)
+
+    print >>sys.stderr, "not before %s" % not_before
+
+    if config.poll_interval == 'streaming':
+        stream = Stream(auth, StreamHandler())
+        track, follow = [], []
+        if config.mode == 'search':
+            track = [config.query]
+        elif config.mode == 'timeline':
+            follow = [config.query]
+        stream.filter(track=track, follow=follow, async=True)
+        tweets = []
+        while 1:
+            cleanup()
+            tweet = incoming.get()
+            tweets.insert(0, tweet)
+            tweets = filter_and_save(tweets, not_before, config.count, config.filter_garbage)
+
+    else:
+        while 1:
+            try:
+                cleanup()
+                if config.mode == 'favs':
+                    tweets = api.favorites(config.query, count=config.count+20, tweet_mode='extended')
+                elif config.mode == 'search':
+                    tweets = api.search(q=config.query, count=config.count+20, tweet_mode='extended')
+                    import pprint
+                    pprint.pprint(tweets[0])
+                elif config.mode == 'timeline':
+                    tweets = api.user_timeline(screen_name=config.query, count=config.count+20, tweet_mode='extended')
+
+                filter_and_save(tweets, not_before, config.count, config.filter_garbage)
+            except:
+                traceback.print_exc()
+                time.sleep(60)
+            else:
+                time.sleep(60 * config.poll_interval)
+
+if __name__ == '__main__':
+    main()

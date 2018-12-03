@@ -1,0 +1,5 @@
+# convert icon + audio file to video
+ffmpeg -loop 1  -i icon.png -i music.m4a -c:v libx264 -r 30 -b 4M -pix_fmt yuv420p -c:a copy -shortest video.mp4
+
+# convert image to video
+ffmpeg -loop 1 -i mute.png -c:v libx264 -t 5 -r 30 -b 4M  -pix_fmt yuv420p  mute.mp4

@@ -1,0 +1,3 @@
+ * Add CEC support
+ * Decide how to unify tiles used in Layouts and Pages, so that tiles used in Layouts can be active across multiple Pages.
+ * Add support for multiple scrollers

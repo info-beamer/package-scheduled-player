@@ -1,0 +1,64 @@
+#!/usr/bin/python
+import time, sys, os, json, traceback, hashlib
+from hosted import api, config, node
+from ibquery import InfoBeamerQuery
+
+config.restart_on_update()
+
+known_img = {}
+expires = {}
+
+def expire_images():
+    now = time.time()
+    for fname, expire in expires.items():
+        if now > expire:
+            try:
+                print >>sys.stderr, "expiring %s" % fname
+                os.unlink(fname)
+            except Exception as err:
+                print >>sys.stderr, "couldn't expire %s: %s" % (fname, err)
+                traceback.print_exc()
+            del expires[fname]
+
+def main():
+    ib = InfoBeamerQuery("127.0.0.1")
+    con = ib.node('root/browser').io(raw=True)
+    for line in con:
+        expire_images()
+
+        request = json.loads(line)
+        url = request['url']
+        selector = request['selector']
+        max_age = request['max_age']
+        width, height, scale = request['width'], request['height'], request['scale']
+        target = request['target']
+        condition = request['condition']
+
+        # expire requested image, regardless of whether or not we
+        # actually update/fetch it. There might be a leftover from
+        # another run and we want to expire those files as well.
+        expires[target] = time.time() + max_age * 5
+
+        try:
+            cache_key = "%s:%s:%s:%s:%s:%s" % (url, selector, width, height, scale, condition)
+
+            print >>sys.stderr, "requesting %s into %s" % (url, target)
+            img = api.websnap.post(data=dict(
+                url = url,
+                selector = selector,
+                width = width,
+                height = height,
+                scale = scale,
+                condition = condition,
+                max_age = max_age,
+                known = known_img.get(cache_key),
+            ))
+            if img:
+                known_img[cache_key] = hashlib.md5(img).hexdigest()
+                node.write_file(target, img)
+        except Exception:
+            traceback.print_exc()
+
+if __name__ == "__main__":
+    main()
+

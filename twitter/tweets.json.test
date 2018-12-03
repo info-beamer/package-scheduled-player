@@ -1,0 +1,9 @@
+[{
+    "profile_image": "node.png",
+    "images": [],
+    "name": "dummy",
+    "lines": ["foo", "bar"],
+    "created_at": 123456789,
+    "screen_name": "user",
+    "text": "foo bar text tweet"
+}]
