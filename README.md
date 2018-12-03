@@ -1,5 +1,7 @@
 # Scheduled Playlist with Animations
 
+[![Import](https://cdn.infobeamer.com/s/img/import.png)](https://info-beamer.com/use?url=https://github.com/info-beamer/package-scheduled-player)
+
 This package allows you to create scheduled content with custom animations.
 It will be the default package for all info-beamer customers in the future.
 Right now it's still very much in development.
