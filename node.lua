@@ -158,7 +158,7 @@ local function ImageCache()
 
     local function get(asset_name, keep) 
         if not images[asset_name] then
-            register(asset_name)
+            register(asset_name, keep)
         end
         local image = images[asset_name]
         if not image then
