@@ -116,5 +116,31 @@
             "rows": 6,
             "default": ""
         }]
+    }, {
+        "title": "Tracks",
+        "name": "tracks",
+        "type": "list",
+        "itemname": "Track",
+        "items": [{
+            "title": "Track Name",
+            "ui_width": 3,
+            "name": "name",
+            "type": "string",
+            "hint": "Name of the track in your schedule.xml export",
+            "default": ""
+        }, {
+            "title": "Display Name",
+            "ui_width": 3,
+            "name": "name_short",
+            "type": "string",
+            "hint": "This can use used to overwrite the 'Schedule Name' for display purposes. Leave empty to use 'Schedule Name'",
+            "default": ""
+        }, {
+            "title": "Color",
+            "ui_width": 3,
+            "name": "color",
+            "type": "color",
+            "default": [1,1,1,1]
+        }]
     }]
 }

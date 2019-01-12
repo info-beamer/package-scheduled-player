@@ -189,6 +189,10 @@
         display: inline-block;
         width: 80px;
       }
+      .trigger-input {
+        display: inline-block;
+        width: 120px;
+      }
       .layout-name {
         margin-bottom: 10px;
       }
@@ -1377,6 +1381,11 @@
             {{ key.value }}
           </option>
         </select>
+
+        <template v-if="interaction.key == 'remote'">
+          with value 
+          <input type="text" v-model="remote" class='form-control trigger-input'/>
+        </template>
 
         <span v-if="interaction.key != ''">
           show this page

@@ -6,8 +6,10 @@ local anims = require(api.localized "anims")
 
 local font, info_font
 local white = resource.create_colored_texture(1,1,1)
+local fallback_track_background = resource.create_colored_texture(.5,.5,.5,1)
 
 local schedule = {}
+local tracks = {}
 local rooms = {}
 local next_talks = {}
 local current_room
@@ -24,6 +26,7 @@ util.data_mapper{
     end;
 }
 
+
 function M.updated_schedule_json(new_schedule)
     print "new schedule"
     schedule = new_schedule
@@ -32,6 +35,11 @@ function M.updated_schedule_json(new_schedule)
         if talk.lang ~= "" then
             talk.title = talk.title .. " (" .. talk.lang .. ")"
         end
+
+        talk.track = tracks[talk.track] or {
+            name = talk.track,
+            background = fallback_track_background,
+        }
     end
 end
 
@@ -40,8 +48,7 @@ function M.updated_config_json(config)
     info_font = resource.load_font(api.localized(config.info_font.asset_name))
 
     rooms = {}
-    for idx = 1, #config.rooms do
-        local room = config.rooms[idx]
+    for idx, room in ipairs(config.rooms) do
         if room.serial == sys.get_env "SERIAL" then
             print("found my room")
             current_room = room
@@ -67,6 +74,15 @@ function M.updated_config_json(config)
         end
         current_room.info_lines = info_lines
     end
+
+    tracks = {}
+    for idx, track in ipairs(config.tracks) do
+        tracks[track.name] = {
+            name = track.name_short,
+            background = resource.create_colored_texture(unpack(track.color.rgba)),
+        }
+    end
+    pp(tracks)
 end
 
 local function wrap(str, font, size, max_w)
@@ -148,6 +164,7 @@ local function check_next_talk()
     end
     table.sort(other_talks, sort_talks)
     print("found " .. #other_talks .. " other talks")
+    pp(next_talks)
 end
 
 local function view_next_talk(starts, ends, config, x1, y1, x2, y2)

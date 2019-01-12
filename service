@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os
+import re
 import traceback
 import threading
 import time
@@ -114,9 +115,29 @@ def send_time():
         print >>sys.stderr, "too soon"
         time.sleep(1)
         return
-
     send_clock()
     time.sleep(0.5)
+
+def monitor_gpio():
+    pins = set()
+    for schedule in config.schedules:
+        for page in schedule['pages']:
+            key = page.get('interaction', {}).get('key', '')
+            m = re.match('gpio_(.*)', key)
+            if m:
+                pins.add(int(m.group(1)))
+    if not pins:
+        time.sleep(120)
+        return
+
+    print >>sys.stderr, "gpios active: %s" % (pins,)
+    for pin in pins:
+        device.gpio.monitor(pin)
+    for pin, high in device.gpio.poll_forever():
+        if high:
+            node.send('/event/gpio:%s' % json.dumps(dict(
+                pin = pin,
+            )))
 
 def screen_toggle():
     ib = InfoBeamerQuery("127.0.0.1")
@@ -144,5 +165,6 @@ if __name__ == "__main__":
     run_in_thread(send_time)
     run_in_thread(screen_toggle)
     run_in_thread(monitor_input)
+    run_in_thread(monitor_gpio)
 
     while 1: time.sleep(1000)

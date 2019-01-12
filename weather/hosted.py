@@ -31,13 +31,15 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-VERSION = "1.1"
+VERSION = "1.2"
 
 import os
 import sys
 import json
-import socket
 import time
+import errno
+import socket
+import select
 import pyinotify
 import thread
 import threading
@@ -145,7 +147,7 @@ class Configuration(object):
 
     def parse_node_json(self, do_update=True):
         with open("node.json") as f:
-            self._options = json.load(f)['options']
+            self._options = json.load(f).get('options', [])
         if do_update:
             self.update_config()
 
@@ -226,12 +228,21 @@ class Node(object):
     def send(self, data):
         self.send_raw(self._node + data)
 
-    def write_file(self, filename, data):
-        f = NamedTemporaryFile(prefix='hosted-py-tmp', dir=os.getcwd())
+    @property
+    def is_top_level(self):
+        return self._node == "root"
+
+    @property
+    def path(self):
+        return self._node
+
+    def write_file(self, filename, content):
+        f = NamedTemporaryFile(prefix='.hosted-py-tmp', dir=os.getcwd())
         try:
-            f.write(data)
+            f.write(content)
         except:
             traceback.print_exc()
+            f.close()
             raise
         else:
             f.delete = False
@@ -305,17 +316,12 @@ class APIProxy(object):
 
     def unwrap(self, r):
         r.raise_for_status()
-        if r.status_code == 304:
-            return None
-        if r.headers['content-type'] == 'application/json':
-            resp = r.json()
-            if not resp['ok']:
-                raise APIError(u"api call failed: %s" % (
-                    resp.get('error', '<unknown error>'),
-                ))
-            return resp.get(self._api_name)
-        else:
-            return r.content
+        resp = r.json()
+        if not resp['ok']:
+            raise APIError(u"api call failed: %s" % (
+                resp.get('error', '<unknown error>'),
+            ))
+        return resp.get(self._api_name)
 
     def add_defaults(self, kwargs):
         if not 'timeout' in kwargs:
@@ -337,7 +343,7 @@ class APIProxy(object):
         self.add_defaults(kwargs)
         try:
             return self.unwrap(self._apis.session.post(
-                url = self.url,
+                url = self.url(),
                 **kwargs
             ))
         except APIError:
@@ -393,10 +399,84 @@ class APIs(object):
     def __getattr__(self, api_name):
         return APIProxy(self, api_name)
 
+class GPIO(object):
+    def __init__(self):
+        self._pin_fd = {}
+        self._state = {}
+        self._fd_2_pin = {}
+        self._poll = select.poll()
+        self._lock = threading.Lock()
+
+    def setup_pin(self, pin, direction="in", invert=False):
+        if not os.path.exists("/sys/class/gpio/gpio%d" % pin):
+            with open("/sys/class/gpio/export", "wb") as f:
+                f.write(str(pin))
+        # mdev is giving the newly create GPIO directory correct permissions.
+        for i in range(10):
+            try:
+                with open("/sys/class/gpio/gpio%d/active_low" % pin, "wb") as f:
+                    f.write("1" if invert else "0")
+                break
+            except IOError as err:
+                if err.errno != errno.EACCES:
+                    raise
+            time.sleep(0.1)
+            log("waiting for GPIO permissions")
+        else:
+            raise IOError(errno.EACCES, "Cannot access GPIO")
+        with open("/sys/class/gpio/gpio%d/direction" % pin, "wb") as f:
+            f.write(direction)
+
+    def set_pin_value(self, pin, high):
+        with open("/sys/class/gpio/gpio%d/value" % pin, "wb") as f:
+            f.write("1" if high else "0")
+
+    def monitor(self, pin, invert=False):
+        if pin in self._pin_fd:
+            return
+        self.setup_pin(pin, direction="in", invert=invert)
+        with open("/sys/class/gpio/gpio%d/edge" % pin, "wb") as f:
+            f.write("both")
+        fd = os.open("/sys/class/gpio/gpio%d/value" % pin, os.O_RDONLY)
+        self._state[pin] = bool(int(os.read(fd, 5)))
+        self._fd_2_pin[fd] = pin
+        self._pin_fd[pin] = fd
+        self._poll.register(fd, select.POLLPRI | select.POLLERR)
+
+    def poll(self, timeout=1000):
+        changes = []
+        for fd, evt in self._poll.poll(timeout):
+            os.lseek(fd, 0, 0)
+            state = bool(int(os.read(fd, 5)))
+            pin = self._fd_2_pin[fd]
+            with self._lock:
+                prev_state, self._state[pin] = self._state[pin], state
+            if state != prev_state:
+                changes.append((pin, state))
+        return changes
+
+    def poll_forever(self):
+        while 1:
+            for event in self.poll():
+                yield event
+
+    def on(self, pin):
+        with self._lock:
+            return self._state.get(pin, False)
 
 class Device(object):
     def __init__(self):
         self._socket = None
+        self._gpio = GPIO()
+
+    @property
+    def gpio(self):
+        return self._gpio
+
+    @property
+    def screen_resolution(self):
+        with open("/sys/class/graphics/fb0/virtual_size", "rb") as f:
+            return [int(val) for val in f.read().strip().split(',')]
 
     def ensure_connected(self):
         if self._socket:
@@ -436,7 +516,10 @@ class Device(object):
             self.turn_screen_off()
 
     def reboot(self):
-        self.send_raw("reboot")
+        self.send_raw("system reboot")
+
+    def halt_until_powercycled(self):
+        self.send_raw("system halt")
 
     def restart_infobeamer(self):
         self.send_raw("infobeamer restart")

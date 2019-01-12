@@ -70,6 +70,7 @@ def main():
                 start_str = event['start_str'],
                 title = event['title'],
                 group = event['group'],
+                track = event['track'],
                 start_unix = event['start_unix'],
                 end_unix = event['end_unix'],
                 id = event['id'],

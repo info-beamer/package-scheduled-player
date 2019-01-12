@@ -897,9 +897,7 @@ local function JobQueue()
     end
 
     local function tick(now)
-        for idx = 1, #jobs do
-            local job = jobs[idx]
-
+        for idx, job in ipairs(jobs) do
             local ok, again = coroutine.resume(job.co, now)
             if not ok then
                 log(
@@ -938,10 +936,8 @@ local layouts = {}
 local background = {r = 0, g = 0, b = 0, a = 0}
 node.event("config_updated", function(config)
     layouts = config.layouts
-    for l = 1, #layouts do
-        local layout = layouts[l]
-        for t = 1, #layout.tiles do
-            local tile = layout.tiles[t]
+    for _, layout in ipairs(layouts) do
+        for _, tile in ipairs(layout.tiles) do
             local asset = tile.asset
             if asset.type == "image" or asset.type == "video" then
                 log("config_updated", "fixing layout asset %s", asset.asset_name)
@@ -968,8 +964,8 @@ local function Page(page)
         local tiles = {}
 
         local function append_page_tiles()
-            for i = 1, #page.tiles do
-                tiles[#tiles+1] = page.tiles[i]
+            for _, tile in ipairs(page.tiles) do
+                tiles[#tiles+1] = tile
             end
         end
 
@@ -977,12 +973,11 @@ local function Page(page)
             append_page_tiles()
         else
             local layout = layouts[page.layout_id+1]
-            for i = 1, #layout.tiles do
-                local tile = layout.tiles[i]
+            for _, tile in ipairs(layout.tiles) do
                 if tile.type == "page" then
                     append_page_tiles()
                 else
-                    tiles[#tiles+1] = layout.tiles[i]
+                    tiles[#tiles+1] = tile
                 end
             end
         end
@@ -1007,8 +1002,7 @@ local function Scheduler(page_source, job_queue)
         duration = duration or page.get_duration()
         local tiles = page.get_tiles()
 
-        for idx = 1, #tiles do
-            local tile = tiles[idx]
+        for _, tile in ipairs(tiles) do
             local handler = ({
                 image = ImageTile,
                 video = VideoTile,
@@ -1098,6 +1092,31 @@ local function Scheduler(page_source, job_queue)
         enqueue_page(page, duration)
     end
 
+    local function handle_gpio(event)
+        local page = page_source.find_by_gpio(event.pin)
+        if not page then
+            return
+        end
+
+        local duration = page.get_duration "interactive"
+
+        reset_scheduler()
+        enqueue_page(page, duration)
+    end
+
+    local function handle_remote_trigger(remote)
+        print("remote trigger", remote)
+        local page = page_source.find_by_remote(remote)
+        if not page then
+            return
+        end
+
+        local duration = page.get_duration "interactive"
+
+        reset_scheduler()
+        enqueue_page(page, duration)
+    end
+
     local function handle_cec(cec_key)
         if cec_key == "left" then
             reset_scheduler()
@@ -1116,6 +1135,8 @@ local function Scheduler(page_source, job_queue)
         tick = tick;
         handle_keyboard = handle_keyboard;
         handle_gamepad = handle_gamepad;
+        handle_gpio = handle_gpio;
+        handle_remote_trigger = handle_remote_trigger;
         handle_cec = handle_cec;
     }
 end
@@ -1132,17 +1153,15 @@ local function PageSource(clock)
     node.event("config_updated", function(config)
         schedules = config.schedules
 
-        for s = 1, #schedules do
-            local schedule = schedules[s]
-            for p = #schedule.pages, 1, -1 do
-                local page = schedule.pages[p]
+        for _, schedule in ipairs(schedules) do
+            for page_id = #schedule.pages, 1, -1 do
+                local page = schedule.pages[page_id]
                 page.is_fallback = false
                 if page.duration == -1 then
                     -- disabled page? then remove it
-                    table.remove(schedule.pages, p)
+                    table.remove(schedule.pages, page_id)
                 else
-                    for t = 1, #page.tiles do
-                        local tile = page.tiles[t]
+                    for _, tile in ipairs(page.tiles) do
                         local asset = tile.asset
                         if asset.type == "image" or asset.type == "video" then
                             log("config_updated", "fixing schedule asset %s", asset.asset_name)
@@ -1256,14 +1275,13 @@ local function PageSource(clock)
             end
 
             local since_midnight = clock.since_midnight()
-            for idx = 1, #spans do
-                local span = spans[idx]
+            for span_id, span in ipairs(spans) do
                 local dow = clock.day_of_week()
                 if span.days[dow+1] then
                     local start_sec = minutes_since_midnight(parse_hour(span.starts)) * 60
                     local end_sec = minutes_since_midnight(parse_hour(span.ends)) * 60 + 60
                     if since_midnight >= start_sec and since_midnight < end_sec then
-                        log("schedule", "span %s matches", idx)
+                        log("schedule", "span %s matches", span_id)
                         return true
                     end
                 end
@@ -1274,9 +1292,8 @@ local function PageSource(clock)
 
     local function get_scheduled_pages()
         local pages = {}
-        for s = 1, #schedules do
-            local schedule = schedules[s]
-            log("schedule", "checking schedule %s (%d)", schedule.name, s)
+        for schedule_id, schedule in ipairs(schedules) do
+            log("schedule", "checking schedule %s (%d)", schedule.name, schedule_id)
             if is_scheduled(schedule) and #schedule.pages > 0 then
                 local display_mode = schedule.display_mode or "all"
                 if display_mode == "all" then
@@ -1309,11 +1326,30 @@ local function PageSource(clock)
     end
 
     local function find_by_key(key)
-        for schedule_id = 1, #schedules do
-            local schedule = schedules[schedule_id]
-            for page_id = 1, #schedule.pages do
-                local page = schedule.pages[page_id]
+        for schedule_id, schedule in ipairs(schedules) do
+            for page_id, page in ipairs(schedule.pages) do
                 if page.interaction.key == key then
+                    return Page(page)
+                end
+            end
+        end
+    end
+
+    local function find_by_gpio(pin)
+        local key = string.format("gpio_%d", pin)
+        for schedule_id, schedule in ipairs(schedules) do
+            for page_id, page in ipairs(schedule.pages) do
+                if page.interaction.key == key then
+                    return Page(page)
+                end
+            end
+        end
+    end
+
+    local function find_by_remote(remote)
+        for schedule_id, schedule in ipairs(schedules) do
+            for page_id, page in ipairs(schedule.pages) do
+                if page.interaction.key == 'remote' and page.interaction.remote == remote then
                     return Page(page)
                 end
             end
@@ -1387,6 +1423,8 @@ local function PageSource(clock)
         get_next = get_next;
         get_page = get_page;
         find_by_key = find_by_key;
+        find_by_gpio = find_by_gpio;
+        find_by_remote = find_by_remote;
     }
 end
 
@@ -1409,6 +1447,14 @@ util.data_mapper{
         local event = json.decode(raw_event)
         dispatch_to_all_tiles("on_pad", event)
         return scheduler.handle_gamepad(event)
+    end,
+    ["event/gpio"] = function(raw_event)
+        local event = json.decode(raw_event)
+        dispatch_to_all_tiles("on_gpio", event)
+        return scheduler.handle_gpio(event)
+    end,
+    ["remote/trigger/(.*)"] = function(path, data)
+        return scheduler.handle_remote_trigger(path)
     end,
     ["sys/cec/key"] = scheduler.handle_cec,
 }

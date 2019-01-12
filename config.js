@@ -161,6 +161,10 @@ const store = new Vuex.Store({
       state.schedule_id = state.config.schedules.length - 1;
     },
     schedule_delete(state, {schedule_id}) {
+      if (state.config.scratch.debug_schedule_id == schedule_id) {
+        Vue.delete(state.config.scratch, 'debug_schedule_id');
+        Vue.delete(state.config.scratch, 'debug_page_id');
+      }
       if (state.config.schedules.length > 1) {
         state.config.schedules.splice(schedule_id, 1);
         state.schedule_id = 0;
@@ -232,6 +236,12 @@ const store = new Vuex.Store({
       }
     },
     page_delete(state, {schedule_id, page_id}) {
+      if (state.config.scratch.debug_schedule_id == schedule_id &&
+          state.config.scratch.debug_page_id == page_id)
+      {
+        Vue.delete(state.config.scratch, 'debug_schedule_id');
+        Vue.delete(state.config.scratch, 'debug_page_id');
+      }
       state.config.schedules[schedule_id].pages.splice(page_id, 1);
     },
     page_debug(state, {schedule_id, page_id}) {
@@ -1817,6 +1827,7 @@ Vue.component('interaction-ui', {
   data: () => ({
     keys: [
       {key: "", value: "(no manual trigger)"},
+      {key: "remote", value: "Remote Trigger"},
       {key: "space", value: "Space Key"},
       {key: "a", value: "Key 'A'"},
       {key: "b", value: "Key 'B'"},
@@ -1888,36 +1899,69 @@ Vue.component('interaction-ui', {
       {key: "f11",value: "F11"},
       {key: "f12",value: "F12"},
 
-      {key: "leftshift",value: "Left Shift"},
-      {key: "leftctrl",value: "Left Ctrl"},
-      {key: "leftalt",value: "Left Alt"},
-      {key: "leftmeta",value: "Left Meta"},
-      {key: "rightshift",value: "Right Shift"},
-      {key: "rightctrl",value: "Right Ctrl"},
-      {key: "rightalt",value: "Right Alt"},
-      {key: "rightmeta",value: "Right Meta"},
+      {key: "leftshift", value: "Left Shift"},
+      {key: "leftctrl", value: "Left Ctrl"},
+      {key: "leftalt", value: "Left Alt"},
+      {key: "leftmeta", value: "Left Meta"},
+      {key: "rightshift", value: "Right Shift"},
+      {key: "rightctrl", value: "Right Ctrl"},
+      {key: "rightalt", value: "Right Alt"},
+      {key: "rightmeta", value: "Right Meta"},
 
-      {key: "backspace",value: "Backspace"},
-      {key: "compose",value: "Compose"},
-      {key: "capslock",value: "Capslock"},
-      {key: "esc",value: "Escape"},
-      {key: "enter",value: "Enter"},
-      {key: "tab",value: "Tab"},
+      {key: "backspace", value: "Backspace"},
+      {key: "compose", value: "Compose"},
+      {key: "capslock", value: "Capslock"},
+      {key: "esc", value: "Escape"},
+      {key: "enter", value: "Enter"},
+      {key: "tab", value: "Tab"},
 
-      {key: "pad_x",value: "Gamepad X"},
-      {key: "pad_y",value: "Gamepad Y"},
-      {key: "pad_a",value: "Gamepad A"},
-      {key: "pad_b",value: "Gamepad B"},
-      {key: "pad_start",value: "Gamepad Start"},
-      {key: "pad_select",value: "Gamepad Select"},
-      {key: "pad_tl",value: "Gamepad Top-Left"},
-      {key: "pad_tr",value: "Gamepad Top-Right"},
+      {key: "pad_x", value: "Gamepad X"},
+      {key: "pad_y", value: "Gamepad Y"},
+      {key: "pad_a", value: "Gamepad A"},
+      {key: "pad_b", value: "Gamepad B"},
+      {key: "pad_start", value: "Gamepad Start"},
+      {key: "pad_select", value: "Gamepad Select"},
+      {key: "pad_tl", value: "Gamepad Top-Left"},
+      {key: "pad_tr", value: "Gamepad Top-Right"},
+
+      {key: "gpio_2", value: "GPIO 2"},
+      {key: "gpio_3", value: "GPIO 3"},
+      {key: "gpio_4", value: "GPIO 4"},
+      {key: "gpio_5", value: "GPIO 5"},
+      {key: "gpio_6", value: "GPIO 6"},
+      {key: "gpio_12", value: "GPIO 12"},
+      {key: "gpio_13", value: "GPIO 13"},
+      {key: "gpio_14", value: "GPIO 14"},
+      {key: "gpio_15", value: "GPIO 15"},
+      {key: "gpio_16", value: "GPIO 16"},
+      {key: "gpio_17", value: "GPIO 17"},
+      {key: "gpio_18", value: "GPIO 18"},
+      {key: "gpio_19", value: "GPIO 19"},
+      {key: "gpio_20", value: "GPIO 20"},
+      {key: "gpio_21", value: "GPIO 21"},
+      {key: "gpio_22", value: "GPIO 22"},
+      {key: "gpio_23", value: "GPIO 23"},
+      {key: "gpio_24", value: "GPIO 24"},
+      {key: "gpio_25", value: "GPIO 25"},
+      {key: "gpio_26", value: "GPIO 26"},
     ],
     durations: [
       {key: "auto",    value: "as configured"},
       {key: "forever", value: "forever"},
     ],
   }),
+  computed: {
+    remote: {
+      get() {
+        return this.interaction.remote || '';
+      },
+      set(val) {
+        this.$emit('onChange', Object.assign({}, this.interaction, {
+          remote: val,
+        }));
+      }
+    }
+  },
   methods: {
     onSelectKey(evt) {
       this.$emit('onChange', Object.assign({}, this.interaction, {

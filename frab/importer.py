@@ -48,6 +48,7 @@ def get_schedule(url, group):
                 end_unix = to_unixtimestamp(end),
                 duration = int(duration.total_seconds() / 60),
                 title = text_or_empty(event, 'title'),
+                track = text_or_empty(event, 'track'),
                 place = text_or_empty(event, 'room'),
                 abstract = text_or_empty(event, 'abstract'),
                 speakers = [
