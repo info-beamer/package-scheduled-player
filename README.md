@@ -75,6 +75,38 @@ The tile selected will also optionally show additional configuration options
 below the tile list: For images you can specify a fade and movement effect.
 Other tiles have various other options available.
 
+## Interactivity
+
+You can create limited interaction using this package. All pages have the option
+to be triggered by some kind of external event. This can be a key press, a 
+button push on a connected Xbox controller, a GPIO event or a remote event
+triggered using the API.
+
+One pattern when creating interactive content is that you create a new
+playlist and set it's schedule so that it's never scheduled. Then you can
+add any number of pages to this playlist. This of course isn't useful
+yet, as none of its pages are every shown by default. Instead you can then
+use the interaction feature to trigger these pages.
+
+First click the *Interactive* button at the bottom of the page. You'll
+get a new row for setting interaction options:
+
+![Adding interactivity](doc-interaction.png)
+
+You can select a number of different triggers from the drop down list.
+
+If you select *Remote Trigger* you get an additional textbox where
+you can specify a trigger name.
+
+![Adding a remote trigger](doc-remote-trigger1.png)
+
+Later when this setup is installed on any of your devices, you can
+trigger this event from the device detail page of that device. A
+new button is added to the page and clicking it will trigger the
+event remotely.
+
+![Adding a remote trigger](doc-remote-trigger2.png)
+
 ## Beta Release
 
 This package is not ready for production usage yet. Things might still change and as

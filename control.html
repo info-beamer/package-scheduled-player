@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <div id='triggers'></div>
+    <script src="hosted.js"></script>
+    <script>
+      var container = document.getElementById('triggers');
+
+      ib.setDefaultStyle();
+      ib.ready.then(function() {
+        var triggers = [];
+        for (var schedule_id in ib.config.schedules) {
+          var schedule = ib.config.schedules[schedule_id];
+          for (var page_id in schedule.pages) {
+            var page = schedule.pages[page_id];
+            var interaction = page.interaction;
+            if (interaction.key == "remote") {
+              triggers.push(interaction.remote);
+            }
+          }
+        }
+        triggers.sort();
+
+        if (triggers.length == 0) {
+          var info = document.createElement("em");
+          info.appendChild(document.createTextNode("No remote triggers configured for this setup."));
+          container.appendChild(info);
+          return
+        }
+
+        for (var idx in triggers) {
+          let trigger = triggers[idx];
+          var btn = document.createElement("button");
+          btn.appendChild(document.createTextNode(trigger));
+          btn.classList.add('btn');
+          btn.classList.add('btn-default');
+          btn.addEventListener('click', function(evt) {
+            ib.sendCommand("remote/trigger", trigger);
+          });
+          container.appendChild(btn);
+          container.appendChild(document.createTextNode(" "));
+        }
+      })
+    </script>
+  </body>
+</html>
