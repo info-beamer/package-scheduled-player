@@ -1453,8 +1453,8 @@ util.data_mapper{
         dispatch_to_all_tiles("on_gpio", event)
         return scheduler.handle_gpio(event)
     end,
-    ["remote/trigger/(.*)"] = function(path, data)
-        return scheduler.handle_remote_trigger(path)
+    ["remote/trigger"] = function(data)
+        return scheduler.handle_remote_trigger(data)
     end,
     ["sys/cec/key"] = scheduler.handle_cec,
 }
