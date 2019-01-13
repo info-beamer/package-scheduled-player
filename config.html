@@ -48,6 +48,7 @@
       .hour-editor {
         user-select: none;
         -moz-user-select: none;
+        margin-top: 10px;
         cursor: pointer;
       }
       .day {
@@ -250,6 +251,9 @@
         text-align: right;
         margin-top: 5px;
         background-color: #eaf6ea;
+      }
+      .timespan-editor {
+        margin-top: 10px;
       }
       .timespan-editor td {
         padding: 2px 0;
@@ -797,16 +801,18 @@
               :values="modes"
               @onSelected="onSelectMode">
             </select-dropdown>
-            between 
-              <date-select
-                unset="now"
-                :date="scheduling.starts"
-                @onSetDate="onSetStarts"/>
-            and
-              <date-select
-                unset="the end of time"
-                :date="scheduling.ends"
-                @onSetDate="onSetEnds"/>
+            <template v-if="mode != 'never' && mode != 'always'">
+              between
+                <date-select
+                  unset="now"
+                  :date="scheduling.starts"
+                  @onSetDate="onSetStarts"/>
+              and
+                <date-select
+                  unset="the end of time"
+                  :date="scheduling.ends"
+                  @onSetDate="onSetEnds"/>
+            </template>
 
             <!--
               <select-dropdown
@@ -817,7 +823,6 @@
             -->
           </div>
 
-          <br/>
           <hour-editor
             v-if="mode == 'hour'"
             :scheduling="scheduling"

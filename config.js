@@ -1541,6 +1541,8 @@ Vue.component('time-editor', {
     edit: false,
     set: false,
     modes: [
+      ["always", "Always schedule"],
+      ["never", "Never schedule"],
       ["hour", "Hour based"],
       ["span", "Exact time spans"],
     ],

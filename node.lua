@@ -1219,6 +1219,12 @@ local function PageSource(clock)
         local starts = parse_date(scheduling.starts)
         local ends = parse_date(scheduling.ends)
 
+        if mode == "always" then
+            return true
+        elseif mode == "never" then
+            return false
+        end
+
         if not clock.has_time() then
             if starts or ends then
                 log("schedule", "no current time. can't schedule playlist with start/end date")
