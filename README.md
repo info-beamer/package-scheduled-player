@@ -83,7 +83,7 @@ button push on a connected Xbox controller, a GPIO event or a remote event
 triggered using the API.
 
 One pattern when creating interactive content is that you create a new
-playlist and set it's schedule so that it's never scheduled. Then you can
+playlist and set its schedule so that it's never scheduled. Then you can
 add any number of pages to this playlist. This of course isn't useful
 yet, as none of its pages are every shown by default. Instead you can then
 use the interaction feature to trigger these pages.
