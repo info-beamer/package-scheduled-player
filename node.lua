@@ -612,48 +612,111 @@ local function RawVideoTile(asset, config, x1, y1, x2, y2)
     end
 end
 
+local function Streams()
+    local frame = 0
+    local streams = {}
+
+    local MIN_LOAD_INTERVAL = 5
+    local LOADING_TIMEOUT = 10
+
+    local function stream_key(url, audio)
+        return string.format("%s|%s", url, audio)
+    end
+
+    local function get_stream(url, audio, immediate_reload)
+        local now = sys.now()
+        local key = stream_key(url, audio)
+        if not streams[key] then
+            streams[key] = {
+                last_used = now,
+                next_load = now,
+                last_load = nil,
+                url = url,
+                vid = nil,
+            }
+        end
+        local stream = streams[key]
+
+        local state = stream.vid and stream.vid:state()
+        local need_reload = (
+            not stream.vid
+            or state == "finished" or state == "error"
+            or (state == "loading" and now - stream.last_load > LOADING_TIMEOUT)
+        )
+
+        if need_reload then
+            print("[stream] needs reload", url)
+            if stream.vid then
+                print "[stream] disposing current stream instance"
+                stream.vid:dispose()
+                stream.vid = nil
+            end
+            if now >= stream.next_load or immediate_reload then
+                stream.next_load = now + MIN_LOAD_INTERVAL
+                stream.last_load = now
+                stream.vid = resource.load_video{
+                    file = url,
+                    audio = audio,
+                    raw = true,
+                }
+                stream.vid:layer(-10):target(0, 0, 0, 0):alpha(0)
+            end
+        end
+
+        stream.last_used = frame
+        return stream.vid
+    end
+
+    local function tick()
+        frame = frame + 1
+        if frame % 300 == 0 then
+            print "[stream] active streams"
+            pp(streams)
+        end
+
+        for key, stream in pairs(streams) do
+            local frame_delta = frame - stream.last_used
+            if frame_delta > 1 then
+                print("[stream] disposing stream", stream.url)
+                if stream.vid then
+                    stream.vid:dispose()
+                end
+                streams[key] = nil
+            end
+        end
+    end
+
+    return {
+        get_stream = get_stream;
+        tick = tick;
+    }
+end
+local streams = Streams()
+
 local function StreamTile(asset, config, x1, y1, x2, y2)
     local layer = config.layer or 5
     local url = config.url or ""
     local audio = config.audio
 
     return function(starts, ends)
-        helper.wait_t(starts - 2)
+        helper.wait_t(starts - 1)
 
-        local vid
-        local next_load = 0
+        -- force load
+        streams.get_stream(url, audio, true)
 
-        local function load_stream()
-            if vid then
-                vid:dispose()
-                vid = nil
-            end
-            if sys.now() < next_load then
-                return
-            end
-            vid = resource.load_video{
-                file = url,
-                raw = true,
-                audio = audio,
-            }
-            vid:layer(-10):target(0, 0, 0, 0):alpha(0)
-            next_load = sys.now() + 5
+        -- keepalive before start
+        for now in helper.frame_between(0, starts) do
+            streams.get_stream(url, audio)
         end
 
-        load_stream()
+        streams.get_stream(url, audio)
 
+        -- player
         for now in helper.frame_between(starts, ends) do
-            local state = vid and vid:state()
-            if state == "finished" or state == "error" then
-                load_stream()
-            end
+            local vid = streams.get_stream(url, audio)
             if vid then
                 screen.place_video(vid, layer, 1, x1, y1, x2, y2)
             end
-        end
-
-        if vid then
-            vid:dispose()
         end
     end
 end
@@ -1466,6 +1529,7 @@ util.data_mapper{
 }
 
 function node.render()
+    streams.tick()
     FontCache.tick()
     ImageCache.tick()
     screen.setup()
