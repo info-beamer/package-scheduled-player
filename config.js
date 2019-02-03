@@ -838,7 +838,7 @@ Vue.component('page-editor', {
         [20, "Show 20 seconds"],
         [30, "Show 30 seconds"],
         [60, "Show 1 minute"],
-        [60, "Show 90 seconds"],
+        [90, "Show 90 seconds"],
         [120, "Show 2 minutes"],
         [null, "Custom..."],
       ];
