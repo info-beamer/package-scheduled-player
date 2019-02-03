@@ -1147,7 +1147,7 @@
         <div class='row'>
           <div class='col-xs-4'>
             <select-dropdown
-              :selected="config.fade_time || 0"
+              :selected="config.fade_time == undefined ? 0.5 : config.fade_time"
               :values="fade_times"
               @onSelected="onSetValue('fade_time', $event)"/>
             </select-dropdown>
@@ -1178,7 +1178,7 @@
         <div class='row'>
           <div class='col-xs-4'>
             <select-dropdown
-              :selected="config.fade_time || 0.5"
+              :selected="config.fade_time == undefined ? 0.5 : config.fade_time"
               :values="fade_times"
               @onSelected="onSetValue('fade_time', $event)"/>
             </select-dropdown>
