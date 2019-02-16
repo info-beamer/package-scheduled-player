@@ -1432,24 +1432,49 @@ local function PageSource(clock)
     end
 
     local function get_fallback_cycle()
-        return {Page{
-            is_fallback = true,
-            duration = 5,
-            auto_duration = 5,
-            layout_id = -1,
-            overlap = 0,
-            tiles = {{
-                x1 = 0,
-                y1 = 0,
-                x2 = WIDTH,
-                y2 = HEIGHT,
-                asset = fallback,
-                type = 'image',
-                config = {
-                    fit = true,
-                }
+        if fallback.type == "image" then
+            return {Page{
+                is_fallback = true,
+                duration = 5,
+                auto_duration = 5,
+                layout_id = -1,
+                overlap = 0,
+                tiles = {{
+                    x1 = 0,
+                    y1 = 0,
+                    x2 = WIDTH,
+                    y2 = HEIGHT,
+                    asset = fallback,
+                    type = 'image',
+                    config = {
+                        fit = true,
+                    }
+                }}
             }}
-        }}
+        else
+            local duration = 5
+            if fallback.metadata and fallback.metadata.duration then
+                duration = fallback.metadata.duration
+            end
+            return {Page{
+                is_fallback = true,
+                duration = duration,
+                auto_duration = duration,
+                layout_id = -1,
+                overlap = 0,
+                tiles = {{
+                    x1 = 0,
+                    y1 = 0,
+                    x2 = WIDTH,
+                    y2 = HEIGHT,
+                    asset = fallback,
+                    type = 'rawvideo',
+                    config = {
+                        audio = true,
+                    }
+                }}
+            }}
+        end
     end
 
     local function generate_cycle()

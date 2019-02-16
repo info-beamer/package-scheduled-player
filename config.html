@@ -392,10 +392,10 @@
           <h3>Misc settings</h3>
           <div class='row'>
             <div class='col-xs-4'>
-              <label class='field-label'>Fallback Image</label><br/>
+              <label class='field-label'>Fallback Asset</label><br/>
               <img :src='fallback_asset.thumb' width=32 height=32>
               <asset-browser
-                valid="image"
+                valid="image,video"
                 title="Select"
                 @assetSelected="onSetFallback($event)">
               </asset-browser>
