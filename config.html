@@ -284,6 +284,11 @@
         margin-top: 10px;
         margin-bottom: 10px;
       }
+      .fallback-note {
+        margin-bottom: 0px;
+        margin-top: 10px;
+      }
+
     </style>
   </head>
   <body>
@@ -491,7 +496,7 @@
 
         <div class='schedule-header'>
           <h4 class='schedule-title'>
-            {{schedule.name}}
+            Playlist {{schedule.name}}
           </h4>
           <div>
             According to
@@ -801,7 +806,7 @@
               :values="modes"
               @onSelected="onSelectMode">
             </select-dropdown>
-            <template v-if="mode != 'never' && mode != 'always'">
+            <template v-if="mode == 'hour' || mode == 'span'">
               between
                 <date-select
                   unset="now"
@@ -823,6 +828,13 @@
             -->
           </div>
 
+          <div class='alert alert-info fallback-note' v-if="mode == 'fallback'">
+            Playlist is only active if no other playlist is scheduled. If you
+            have multiple playlists scheduled as 'fallback', all of them are
+            scheduled at the same time. This is more flexible than using the
+            fallback options in the settings tab as you can use all playlist
+            controls.
+          </div>
           <hour-editor
             v-if="mode == 'hour'"
             :scheduling="scheduling"

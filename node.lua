@@ -1282,7 +1282,11 @@ local function PageSource(clock)
         local starts = parse_date(scheduling.starts)
         local ends = parse_date(scheduling.ends)
 
-        if mode == "always" then
+        if mode == "fallback" then
+            -- Do not schedule here. Later if there's nothing scheduled at all, we
+            -- fetch the 'fallback' schedules in get_fallback_cycle()
+            return false
+        elseif mode == "always" then
             return true
         elseif mode == "never" then
             return false
@@ -1359,41 +1363,6 @@ local function PageSource(clock)
         end
     end
 
-    local function get_scheduled_pages()
-        local pages = {}
-        for schedule_id, schedule in ipairs(schedules) do
-            log("schedule", "checking schedule %s (%d)", schedule.name, schedule_id)
-            if is_scheduled(schedule) and #schedule.pages > 0 then
-                local display_mode = schedule.display_mode or "all"
-                if display_mode == "all" then
-                    log("schedule", "adding all pages")
-                    for p = 1, #schedule.pages do
-                        pages[#pages+1] = Page(schedule.pages[p])
-                    end
-                else -- random-1
-                    log("schedule", "selecting a random page")
-                    local random_page = math.random(1, #schedule.pages)
-                    pages[#pages+1] = Page(schedule.pages[random_page])
-                end
-            end
-        end
-        return pages
-    end
-
-    local function get_page(schedule_id, page_id)
-        local schedule = schedules[schedule_id]
-        if not schedule then
-            return
-        end
-
-        local page = schedule.pages[page_id]
-        if not page then
-            return
-        end
-
-        return Page(page)
-    end
-
     local function find_by_key(key)
         for schedule_id, schedule in ipairs(schedules) do
             for page_id, page in ipairs(schedule.pages) do
@@ -1425,56 +1394,112 @@ local function PageSource(clock)
         end
     end
 
+    local function get_page(schedule_id, page_id)
+        local schedule = schedules[schedule_id]
+        if not schedule then
+            return
+        end
+
+        local page = schedule.pages[page_id]
+        if not page then
+            return
+        end
+
+        return Page(page)
+    end
+
     local function get_debug_page()
         if debug_schedule_id and debug_page_id then
             return get_page(debug_schedule_id+1, debug_page_id+1)
         end
     end
 
-    local function get_fallback_cycle()
-        if fallback.type == "image" then
-            return {Page{
-                is_fallback = true,
-                duration = 5,
-                auto_duration = 5,
-                layout_id = -1,
-                overlap = 0,
-                tiles = {{
-                    x1 = 0,
-                    y1 = 0,
-                    x2 = WIDTH,
-                    y2 = HEIGHT,
-                    asset = fallback,
-                    type = 'image',
-                    config = {
-                        fit = true,
-                    }
-                }}
-            }}
-        else
-            local duration = 5
-            if fallback.metadata and fallback.metadata.duration then
-                duration = fallback.metadata.duration
-            end
-            return {Page{
-                is_fallback = true,
-                duration = duration,
-                auto_duration = duration,
-                layout_id = -1,
-                overlap = 0,
-                tiles = {{
-                    x1 = 0,
-                    y1 = 0,
-                    x2 = WIDTH,
-                    y2 = HEIGHT,
-                    asset = fallback,
-                    type = 'rawvideo',
-                    config = {
-                        audio = true,
-                    }
-                }}
-            }}
+    local function fill_pages_from_schedule(pages, schedule)
+        if #schedule.pages == 0 then
+            return
         end
+
+        local display_mode = schedule.display_mode or "all"
+        if display_mode == "all" then
+            log("schedule", "adding all pages")
+            for p = 1, #schedule.pages do
+                pages[#pages+1] = Page(schedule.pages[p])
+            end
+        else -- random-1
+            log("schedule", "selecting a random page")
+            local random_page = math.random(1, #schedule.pages)
+            pages[#pages+1] = Page(schedule.pages[random_page])
+        end
+    end
+
+    local function get_scheduled_pages()
+        local pages = {}
+        for schedule_id, schedule in ipairs(schedules) do
+            log("schedule", "checking schedule %s (%d)", schedule.name, schedule_id)
+            if is_scheduled(schedule) then
+                fill_pages_from_schedule(pages, schedule)
+            end
+        end
+        return pages
+    end
+
+    local function get_fallback_cycle()
+        local pages = {}
+        for schedule_id, schedule in ipairs(schedules) do
+            if schedule.scheduling.mode == "fallback" then
+                fill_pages_from_schedule(pages, schedule)
+            end
+        end
+
+        if #pages > 0 then
+            log("get_fallback_cycle", "added %d pages scheduled as fallback", #pages)
+        else
+            if fallback.type == "image" then
+                pages[#pages+1] = Page{
+                    is_fallback = true,
+                    duration = 5,
+                    auto_duration = 5,
+                    layout_id = -1,
+                    overlap = 0,
+                    tiles = {{
+                        x1 = 0,
+                        y1 = 0,
+                        x2 = WIDTH,
+                        y2 = HEIGHT,
+                        asset = fallback,
+                        type = 'image',
+                        config = {
+                            fit = true,
+                        }
+                    }}
+                }
+            else
+                local duration = 5
+                if fallback.metadata and fallback.metadata.duration then
+                    duration = fallback.metadata.duration
+                end
+                pages[#pages+1] = Page{
+                    is_fallback = true,
+                    duration = duration,
+                    auto_duration = duration,
+                    layout_id = -1,
+                    overlap = 0,
+                    tiles = {{
+                        x1 = 0,
+                        y1 = 0,
+                        x2 = WIDTH,
+                        y2 = HEIGHT,
+                        asset = fallback,
+                        type = 'rawvideo',
+                        config = {
+                            audio = true,
+                        }
+                    }}
+                }
+            end
+        end
+        log("schedule", "fallback cycle len is %d", #pages)
+        return pages
     end
 
     local function generate_cycle()
@@ -1515,7 +1540,6 @@ local function PageSource(clock)
     return {
         get_prev = get_prev;
         get_next = get_next;
-        get_page = get_page;
         find_by_key = find_by_key;
         find_by_gpio = find_by_gpio;
         find_by_remote = find_by_remote;

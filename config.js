@@ -1545,6 +1545,7 @@ Vue.component('time-editor', {
       ["never", "Never schedule"],
       ["hour", "Hour based"],
       ["span", "Exact time spans"],
+      ["fallback", "Use as fallback"],
     ],
   }),
   computed: {
