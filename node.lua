@@ -546,15 +546,49 @@ local function ImageTile(asset, config, x1, y1, x2, y2)
     end
 end
 
+local transparent_shader = resource.create_shader[[
+    uniform sampler2D Texture;
+    varying vec2 TexCoord;
+    uniform vec3 Transparent;
+    uniform vec4 Color;
+
+    // These values seem to work reasonably well.
+    const float thresholdSensitivity = 0.15;
+    const float smoothing = 0.3;
+
+    void main() {
+        vec3 col = texture2D(Texture, TexCoord).rgb;
+        float maskY = 0.2989 * Transparent.r + 0.5866 * Transparent.g + 0.1145 * Transparent.b;
+        float maskCr = 0.7132 * (Transparent.r - maskY);
+        float maskCb = 0.5647 * (Transparent.b - maskY);
+
+        float Y = 0.2989 * col.r + 0.5866 * col.g + 0.1145 * col.b;
+        float Cr = 0.7132 * (col.r - Y);
+        float Cb = 0.5647 * (col.b - Y);
+
+        float blendValue = smoothstep(thresholdSensitivity, thresholdSensitivity + smoothing, distance(vec2(Cr, Cb), vec2(maskCr, maskCb)));
+
+        gl_FragColor = vec4(col * blendValue, 1.0 * blendValue);
+    }
+]]
+
 local function VideoTile(asset, config, x1, y1, x2, y2)
     -- config:
     --   fade_time: 0-1
     --   looped
+    --   transparency: bool
+    --   transparent_color: #ffffff
 
     local file = resource.open_file(asset.asset_name)
     local fade_time = config.fade_time or 0.5
     local looped = config.looped
     local audio = config.audio
+
+    local transparency = config.transparency
+    local r, g, b = helper.parse_rgb(config.transparent_color or "#ffffff")
+    local shader_args = {
+        Transparent = {r, g, b}
+    }
 
     return function(starts, ends)
         helper.wait_t(starts - 2)
@@ -567,9 +601,15 @@ local function VideoTile(asset, config, x1, y1, x2, y2)
         }
 
         for now in helper.frame_between(starts, ends) do
+            if transparency then
+                transparent_shader:use(shader_args)
+            end
             vid:draw(x1, y1, x2, y2, helper.ramp(
                 starts, ends, now, fade_time
             )):start()
+            if transparency then
+                transparent_shader:deactivate()
+            end
         end
 
         vid:dispose()

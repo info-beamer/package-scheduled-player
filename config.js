@@ -1072,7 +1072,13 @@ Vue.component('tile-option-video', TileOption.extend({
       [1.5, "1.5 seconds fade"],
       [2.0, "2 seconds fade"],
     ]
-  })
+  }),
+  computed: {
+    transparent_color: {
+      get() { return this.config.transparent_color || "#ffffff" },
+      set(value) { this.onSetValue('transparent_color', value) },
+    }
+  }
 }))
 
 Vue.component('tile-option-rawvideo', TileOption.extend({

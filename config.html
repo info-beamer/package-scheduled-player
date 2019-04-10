@@ -288,7 +288,12 @@
         margin-bottom: 0px;
         margin-top: 10px;
       }
-
+      .transparency-select {
+        border: 0;
+        padding: 0;
+        margin: 0;
+        background-color: transparent;
+      }
     </style>
   </head>
   <body>
@@ -1157,14 +1162,14 @@
       <div class='tile-option'>
         <label class='field-label'>Video Configuration</label><br/>
         <div class='row'>
-          <div class='col-xs-4'>
+          <div class='col-xs-3'>
             <select-dropdown
               :selected="config.fade_time == undefined ? 0.5 : config.fade_time"
               :values="fade_times"
               @onSelected="onSetValue('fade_time', $event)"/>
             </select-dropdown>
           </div>
-          <div class='col-xs-4'>
+          <div class='col-xs-2'>
             <div class="checkbox">
               <label>
                 <input type="checkbox" :checked="config.looped" @change="onSetValue('looped', $event.target.checked)"/>
@@ -1172,11 +1177,20 @@
               </label>
             </div>
           </div>
-          <div class='col-xs-4'>
+          <div class='col-xs-2'>
             <div class="checkbox">
               <label>
                 <input type="checkbox" :checked="config.audio" @change="onSetValue('audio', $event.target.checked)"/>
                 Play audio
+              </label>
+            </div>
+          </div>
+          <div class='col-xs-5'>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" :checked="config.transparency" @change="onSetValue('transparency', $event.target.checked)"/>
+                Color to transparency 
+                <input type="color" v-model="transparent_color" class='transparency-select' v-if='config.transparency'/>
               </label>
             </div>
           </div>
@@ -1545,10 +1559,15 @@
               config: {},
               x1: 100, y1: 100, x2: 800, y2: 400,
             }, {
+              type: "video",
+              asset: "mute.mp4",
+              config: {},
+              x1: 300, y1: 200, x2: 600, y2: 350,
+            }, {
               type: "markup",
               asset: "default-font.ttf",
               config: {},
-              x1: 100, y1: 100, x2: 800, y2: 400,
+              x1: 800, y1: 600, x2: 1300, y2: 900,
             }],
           }, {
             duration: 5,
