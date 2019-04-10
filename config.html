@@ -289,7 +289,7 @@
         margin-top: 10px;
       }
       .transparency-select {
-        border: 0;
+        border: 1px solid gray;
         padding: 0;
         margin: 0;
         background-color: transparent;
@@ -1189,7 +1189,7 @@
             <div class="checkbox">
               <label>
                 <input type="checkbox" :checked="config.transparency" @change="onSetValue('transparency', $event.target.checked)"/>
-                Color to transparency 
+                Chroma key color
                 <input type="color" v-model="transparent_color" class='transparency-select' v-if='config.transparency'/>
               </label>
             </div>
