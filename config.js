@@ -1144,7 +1144,7 @@ Vue.component('tile-option-time', TileOption.extend({
   template: '#tile-option-time',
   data: () => ({
     modes: [
-      ["countdown", "Countdown"],
+      // ["countdown", "Countdown"],
       ["digital_clock", "Digital clock"],
       ["analog_clock", "Analog clock"],
     ],
