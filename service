@@ -17,8 +17,25 @@ from ibquery import InfoBeamerQuery
 
 config.restart_on_update()
 
-tz = pytz.timezone(config.timezone)
-devices = {}
+schedule_tz = pytz.timezone(config.timezone)
+
+def iter_tiles(types=None):
+    for schedule in config.schedules:
+        for page in schedule['pages']:
+            for tile in page['tiles']:
+                if not types or tile['type'] in types:
+                    yield tile
+
+all_timezones = {
+    schedule_tz.zone: schedule_tz,
+}
+for tile in iter_tiles('time'):
+    print >>sys.stderr, tile
+    tile_tz = tile['config'].get('timezone')
+    if tile_tz:
+        all_timezones[tile_tz] = pytz.timezone(tile_tz)
+
+print >>sys.stderr, all_timezones
 
 try:
     sim_date, sim_time = config.time.strip().split()
@@ -26,14 +43,16 @@ try:
     ho, mi = sim_time.split(':')
 
     utc_now = datetime.now(pytz.utc)
-    local_now = utc_now.astimezone(tz)
-    simulated = tz.localize(datetime(int(y), int(m), int(d), int(ho), int(mi), 00))
+    local_now = utc_now.astimezone(schedule_tz)
+    simulated = schedule_tz.localize(datetime(int(y), int(m), int(d), int(ho), int(mi), 00))
 
     diff =  simulated - local_now
 except:
     diff = timedelta()
+
 print >>sys.stderr, "timedelta for simulation: %r" % (diff,)
 
+devices = {}
 def update_devices():
     new = set(list_devices("/dev/input/"))
     old = set(devices.keys())
@@ -44,7 +63,7 @@ def update_devices():
     for device_name in old - new:
         del devices[device_name]
 
-def send_clock():
+def send_clock(tz):
     utc_now = datetime.now(pytz.utc) + diff
 
     unix = timegm(utc_now.timetuple()) + utc_now.microsecond / 1000000.
@@ -61,13 +80,13 @@ def send_clock():
     since_monday = local_now - monday
     since_monday = since_monday.days * 86400 + since_monday.seconds + since_monday.microseconds / 1000000.
 
-    node['/clock'](json.dumps(dict(
+    node['/clock/%s' % tz.zone](json.dumps(dict(
         year = local_now.year,
         month = local_now.month,
         day = local_now.day,
         unix = unix,
         dow = local_now.weekday(),
-        since_midnight = int(since_midnight),
+        since_midnight = since_midnight,
         since_monday = int(since_monday),
         week_hour = int(since_monday / 3600),
         diff = diff.total_seconds(),
@@ -115,7 +134,8 @@ def send_time():
         print >>sys.stderr, "too soon"
         time.sleep(1)
         return
-    send_clock()
+    for name, tz in all_timezones.iteritems():
+        send_clock(tz)
     time.sleep(0.5)
 
 def monitor_gpio():

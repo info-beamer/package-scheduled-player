@@ -1140,6 +1140,56 @@ Vue.component('tile-option-child', TileOption.extend({
   }
 }))
 
+Vue.component('tile-option-time', TileOption.extend({
+  template: '#tile-option-time',
+  data: () => ({
+    modes: [
+      ["countdown", "Countdown"],
+      ["digital_clock", "Digital clock"],
+      ["analog_clock", "Analog clock"],
+    ],
+    // countdown_styles: [
+    //   ["hms", "Hours/Minutes/Seconds"],
+    //   ["minutes", "Minutes"],
+    // ],
+    types: [
+      ["hm", "Hours & Minutes"],
+      ["hms", "Hours, Minutes & Seconds"],
+    ],
+    styles: [
+      [1, "Style 1"],
+      [2, "Style 2"],
+    ],
+    aligns: [
+      ["center", "Centered"],
+      ["left", "Left aligned"],
+      ["right", "Right aligned"],
+    ],
+    movements: [
+      ["smooth", "Smooth"],
+      ["dynamic", "Dynamic"],
+      ["discrete", "Discrete"],
+    ],
+    timezones: [
+      ["", "Use timezone configured"],
+      [null, "Setup's timezone"],
+      ["", "Use custom timezone"],
+    ].concat(TIMEZONES),
+  }),
+  computed: {
+    mode() { return this.config.mode || 'digital_clock' },
+    timezone() { return this.config.timezone || null },
+    type() { return this.config.type || "hms" },
+    style() { return this.config.style || 1 },
+    align() { return this.config.align || "center" },
+    movement() { return this.config.movement || "dynamic" },
+    color: {
+      get() { return this.config.color || "#333333" },
+      set(value) { this.onSetValue('color', value) },
+    },
+  }
+}))
+
 Vue.component('tile-option-flat', TileOption.extend({
   template: '#tile-option-flat',
   data: () => ({

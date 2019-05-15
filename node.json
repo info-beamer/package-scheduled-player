@@ -11,7 +11,6 @@
         "TODO",
         ".*.md",
         ".*.jpg",
-        ".*.png",
         ".*.js",
         ".*.html",
         ".gitignore"
@@ -122,6 +121,7 @@
                     ["child", "Child"],
                     ["markup", "Markup"],
                     ["flat", "Flat"],
+                    ["time", "Time"],
                     ["page", "Page Content"]
                 ],
                 "default": "image"
@@ -252,7 +252,8 @@
                         ["browser", "Browser"],
                         ["child", "Child"],
                         ["markup", "Markup"],
-                        ["flat", "Flat"]
+                        ["flat", "Flat"],
+                        ["time", "Time"]
                     ],
                     "default": "image"
                 }, {

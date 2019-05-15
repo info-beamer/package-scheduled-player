@@ -2,7 +2,7 @@ gl.setup(NATIVE_WIDTH, NATIVE_HEIGHT)
 
 node.alias "*" -- catch all communication
 
-util.noglobals()
+util.no_globals()
 
 local json = require "json"
 local loader = require "loader"
@@ -14,9 +14,33 @@ local min, max, abs, floor = math.min, math.max, math.abs, math.floor
 
 local font_regl = resource.load_font "default-font.ttf"
 local font_bold = resource.load_font "default-font-bold.ttf"
+local font_7seg = resource.load_font "7segment.ttf"
+
+local colored = resource.create_shader[[
+    uniform sampler2D Texture;
+    varying vec2 TexCoord;
+    uniform vec4 color;
+    void main() {
+        gl_FragColor = texture2D(Texture, TexCoord) * color;
+    }
+]]
+
+local white_pixel = resource.create_colored_texture(1,1,1,1)
 
 local function log(system, format, ...)
     return print(string.format("[%s] " .. format, system, ...))
+end
+
+local function json_nullify(val)
+    if val == json.null then
+        return
+    else
+        return val
+    end
+end
+
+local function startswith(str, prefix)
+    return str:sub(1, #prefix) == prefix
 end
 
 local function Music()
@@ -213,21 +237,26 @@ local ImageCache = ImageCache()
 local function Clock()
     local has_time = false
     local time = {diff=0}
+    local updated = sys.now()
 
-    util.data_mapper{
-        ["clock"] = function(data)
-            time = json.decode(data)
-            has_time = true
-        end;
-    }
+    local function since_midnight()
+        local delta = sys.now() - updated
+        local seconds = (time.since_midnight + delta) % 86400
+        return seconds
+    end
 
     return {
-        human = function()
-            local t = time.since_midnight % 86400
-            return string.format("%02d:%02d", math.floor(t / 3600), math.floor(t % 3600 / 60))
+        update = function(new_time)
+            time = new_time
+            has_time = true
+            updated = sys.now()
         end;
         has_time = function()
             return has_time
+        end;
+        human = function()
+            local t = since_midnight()
+            return string.format("%02d:%02d", math.floor(t / 3600), math.floor(t % 3600 / 60))
         end;
         unix = function()
             return os.time() + time.diff
@@ -238,9 +267,7 @@ local function Clock()
         day_of_week = function()
             return time.dow
         end;
-        since_midnight = function()
-            return time.since_midnight
-        end,
+        since_midnight = since_midnight,
         today = function()
             return {
                 day = time.day;
@@ -251,7 +278,51 @@ local function Clock()
     }
 end
 
-local clock = Clock()
+local function Clocks()
+    local tz_clocks = {}
+
+    local function create_and_get(tz)
+        if not tz_clocks[tz] then
+            tz_clocks[tz] = Clock()
+        end
+        return tz_clocks[tz]
+    end
+
+    util.data_mapper{
+        ["clock/(.*)"] = function(tz, data)
+            local time = json.decode(data)
+            local clock = create_and_get(tz)
+            clock.update(time)
+        end;
+    }
+
+    return {
+        get = create_and_get;
+    }
+end
+
+local clocks = Clocks()
+
+
+-- clock object pointing to the configured schedule timezone
+local schedule_clock = setmetatable({
+    tz = "UTC",
+}, {
+    __index = function(config, key)
+        return clocks.get(config.tz)[key]
+    end,
+})
+node.event("config_updated", function(config)
+    schedule_clock.tz = config.timezone
+end)
+
+local function clock_for_tz_or_default(tz)
+    if tz then
+        return clocks.get(tz)
+    else
+        return schedule_clock
+    end
+end
 
 local SharedData = function()
     -- {
@@ -354,7 +425,7 @@ tile_loader.before_load = function(tile, exports)
         get_rotation = screen.get_rotation;
     }
 
-    exports.clock = clock
+    exports.clock = schedule_clock;
 
     exports.update_data = function(key, value)
         data.delete(tile, key)
@@ -782,6 +853,137 @@ local function FlatTile(asset, config, x1, y1, x2, y2)
     end
 end
 
+local function TimeTile(asset, config, x1, y1, x2, y2)
+    local r, g, b = helper.parse_rgb(config.color or "#333333")
+    local clock = clock_for_tz_or_default(json_nullify(config.timezone))
+
+    local clock_mode = config.mode or "digital_clock"
+    local clock_type = config.type or "hms"
+    local clock_style = config.style or 1
+    local clock_align = config.align or "center"
+    local clock_movement = config.movement or "dynamic"
+
+    if clock_mode == "digital_clock" then
+        local size = y2 - y1
+        local font, fmt
+
+        if clock_style == 1 then
+            font = font_7seg
+        else
+            font = font_regl
+        end
+
+        if clock_type == "hms" then
+            fmt = "%02d:%02d:%02d"
+        else
+            fmt = "%02d:%02d"
+        end
+
+        return function(starts, ends)
+            for now in helper.frame_between(starts, ends) do
+                local t = clock.since_midnight()
+                local time = string.format(fmt,
+                    math.floor(t / 3600),
+                    math.floor(t % 3600 / 60),
+                    math.floor(t % 60)
+                )
+
+                local w = font:width(time, size)
+
+                local x
+                if clock_align == "left" then
+                    x = x1
+                elseif clock_align == "right" then
+                    x = x2 - w
+                elseif clock_align == "center" then
+                    x = x1 + (x2-x1)/2 - w/2
+                end
+
+                font:write(x, y1, time, size, r,g,b,1)
+            end
+        end
+    elseif clock_mode == "analog_clock" then
+        local cx = x1 + (x2 - x1)/2
+        local cy = y1 + (y2 - y1)/2
+        local size = math.min(y2-y1, x2-x1)
+        local radius = size/2
+        local unit = size/30
+
+        local hand_img
+        
+        if clock_style == 1 then 
+            hand_img = resource.load_image{
+                file = "hand-1.png",
+                mipmap = true,
+            }
+        else
+            hand_img = resource.load_image{
+                file = "hand-2.png",
+                mipmap = true,
+            }
+        end
+
+        local show_seconds = clock_type == "hms"
+
+        -- local function dots()
+        --     gl.pushMatrix()
+        --         gl.rotate(90, 0, 0, 1)
+        --         for i = 0, 55,5 do
+        --             if i % 15 == 0 then
+        --                 pixel:draw(radius-unit, -unit/2, radius, unit/2, 0.8)
+        --             else 
+        --                 pixel:draw(radius-unit/2, -unit/4, radius, unit/4, 0.8)
+        --             end
+        --             gl.rotate(360/60*5, 0, 0, 1)
+        --         end
+        --     gl.popMatrix()
+        -- end
+
+        local function hand(len, thick, angle)
+            gl.pushMatrix()
+                gl.rotate(angle*360-90, 0, 0, 1)
+                hand_img:draw(-len*0.1, -thick/2, len*0.9, thick/2)
+            gl.popMatrix()
+        end
+
+        local function movement(val)
+            if clock_movement == "dynamic" then
+                return math.floor(val) + math.sin(((val%1)-0.5) * math.pi)/2 + .5
+            elseif clock_movement == "smooth" then
+                return val
+            else
+                return math.floor(val)
+            end
+        end
+
+        return function(starts, ends)
+            for now in helper.frame_between(starts, ends) do
+                local t = clock.since_midnight()
+
+                colored:use{
+                    color = {r,g,b,1}
+                }
+                gl.pushMatrix()
+                    gl.translate(cx, cy)
+
+                    local hour = movement((t / 3600) % 12)
+                    hand(radius-7*unit, unit, hour/12)
+
+                    local minute = movement(t % 3600 / 60)
+                    hand(radius-3*unit, unit*0.75, minute/60)
+
+                    if show_seconds then
+                        local second = movement(t % 60)
+                        hand(radius, unit*0.5, second/60)
+                    end
+                gl.popMatrix()
+                colored:deactivate()
+            end
+            hand_img:dispose()
+        end
+    end
+end
+
 local function FontCache()
     local fonts = {}
 
@@ -1113,6 +1315,7 @@ local function Scheduler(page_source, job_queue)
                 stream = StreamTile,
                 child = ChildTile,
                 flat = FlatTile,
+                time = TimeTile,
                 markup = MarkupTile,
             })[tile.type]
 
@@ -1244,7 +1447,7 @@ local function Scheduler(page_source, job_queue)
     }
 end
 
-local function PageSource(clock)
+local function PageSource()
     local schedules = {}
 
     local cycle_pages = {}
@@ -1332,7 +1535,7 @@ local function PageSource(clock)
             return false
         end
 
-        if not clock.has_time() then
+        if not schedule_clock.has_time() then
             if starts or ends then
                 log("schedule", "no current time. can't schedule playlist with start/end date")
                 return false
@@ -1360,7 +1563,7 @@ local function PageSource(clock)
             return true
         end
 
-        local today = clock.today()
+        local today = schedule_clock.today()
 
         if not date_within(starts, ends, today) then
             log("schedule", "outside of scheduled dates. can't schedule")
@@ -1368,7 +1571,7 @@ local function PageSource(clock)
         end
 
         if mode == "hour" then
-            local current_hour = clock.week_hour()
+            local current_hour = schedule_clock.week_hour()
             local hours = scheduling.hours or {}
             if hours[current_hour+1] == false then
                 -- only refuse to schedule if it's actually set to 'false'.
@@ -1387,9 +1590,9 @@ local function PageSource(clock)
                 return true
             end
 
-            local since_midnight = clock.since_midnight()
+            local since_midnight = schedule_clock.since_midnight()
             for span_id, span in ipairs(spans) do
-                local dow = clock.day_of_week()
+                local dow = schedule_clock.day_of_week()
                 if span.days[dow+1] then
                     local start_sec = minutes_since_midnight(parse_hour(span.starts)) * 60
                     local end_sec = minutes_since_midnight(parse_hour(span.ends)) * 60 + 60
@@ -1586,7 +1789,7 @@ local function PageSource(clock)
     }
 end
 
-local page_source = PageSource(clock)
+local page_source = PageSource()
 local job_queue = JobQueue()
 local scheduler = Scheduler(page_source, job_queue)
 

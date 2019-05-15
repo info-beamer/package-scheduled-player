@@ -201,6 +201,15 @@
         margin-top: 5px;
         margin-bottom: 5px;
       }
+      .color-pick {
+        color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        display: inline-block;
+        height: 32px;
+        margin-top: -4px;
+        width: 40px;
+      }
       .img-thumb {
         margin-left: auto;
         margin-right: auto;
@@ -987,6 +996,7 @@
             @assetSelected="onAddTile('child', $event)">
           </asset-browser>
           <button class='btn btn-default' @click="onAddTile('flat', 'flat.png')">Flat</button>
+          <button class='btn btn-default' @click="onAddTile('time', 'time.png')">Time</button>
         </div>
         <div>
           <table class="table table-condensed table-bordered table-hover table-clickable">
@@ -1039,6 +1049,10 @@
             v-if="selected_tile.type == 'flat'"
             :tile="selected_tile"
             @onSetTileConfig="onSetTileConfig(selected_tile_id, $event)"/>
+          <tile-option-time
+            v-if="selected_tile.type == 'time'"
+            :tile="selected_tile"
+            @onSetTileConfig="onSetTileConfig(selected_tile_id, $event)"/>
           <tile-option-child
             v-if="selected_tile.type == 'child'"
             :tile="selected_tile"
@@ -1067,6 +1081,10 @@
             </span>
             <span v-else-if="tile.type == 'flat'">
               Colored Flat Square
+            </span>
+            <span v-else-if="tile.type == 'time'">
+              <img :src="thumb_url" width=20 height=20>
+              Time / Countdown display
             </span>
             <span v-else>
               <img :src="thumb_url" width=20 height=20>
@@ -1293,6 +1311,51 @@
       </div>
     </script>
 
+    <script type="text/x-template" id="tile-option-time">
+      <div class='tile-option'>
+        <label class='field-label'>Time tile Configuration</label><br/>
+        <div>
+          <select-dropdown
+            :selected="mode"
+            :values="modes"
+            @onSelected="onSetValue('mode', $event)"/>
+          </select-dropdown>
+          <select-dropdown
+            :selected="timezone"
+            :values="timezones"
+            @onSelected="onSetValue('timezone', $event)">
+          </select-dropdown>
+        </div>
+        <div v-if='mode == "digital_clock" || mode == "analog_clock"'>
+          <label class='field-label'>Clock config</label><br/>
+          <select-dropdown
+            :selected="type"
+            :values="types"
+            @onSelected="onSetValue('type', $event)"/>
+          </select-dropdown>
+          <select-dropdown v-if='mode == "analog_clock"'
+            :selected="movement"
+            :values="movements"
+            @onSelected="onSetValue('movement', $event)"/>
+          </select-dropdown>
+          <select-dropdown v-if='mode == "digital_clock"'
+            :selected="align"
+            :values="aligns"
+            @onSelected="onSetValue('align', $event)"/>
+          </select-dropdown>
+          <select-dropdown
+            :selected="style"
+            :values="styles"
+            @onSelected="onSetValue('style', $event)"/>
+          </select-dropdown>
+          <input type="color" v-model="color" class='color-pick'/>
+        </div>
+        <template v-else>
+          <label class='field-label'>Not implemented yet</label><br/>
+        </template>
+      </div>
+    </script>
+
     <script type="text/x-template" id="tile-option-markup">
       <div class='tile-option'>
         <label class='field-label'>Text/Markup Configuration</label><br/>
@@ -1496,6 +1559,12 @@
           filetype: 'image',
           filename: 'flat.png',
         },
+        "time.png": {
+          id: "time.png",
+          thumb: 'time.png',
+          filetype: 'image',
+          filename: 'time.png',
+        },
         "stream.png": {
           id: "stream.png",
           thumb: 'stream.png',
@@ -1558,6 +1627,11 @@
               asset: 1,
               config: {},
               x1: 100, y1: 100, x2: 800, y2: 400,
+            }, {
+              type: "time",
+              asset: "time.png",
+              config: {},
+              x1: 600, y1: 400, x2: 800, y2: 600,
             }, {
               type: "video",
               asset: "mute.mp4",
