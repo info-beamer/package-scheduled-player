@@ -41,7 +41,7 @@
         background: URL(data:image/gif;base64,R0lGODlhGAAEAIABAIWFhf///yH5BAEKAAEALAAAAAAYAAQAAAIPjB8AprwIUUtvxouz3qYAADs=) repeat left top;
         width: 24px;
         height: 20px;
-                margin-bottom: -7px;
+        margin-bottom: -7px;
         cursor: move;
         margin-right: 10px;
       }
@@ -207,7 +207,7 @@
         border-radius: 4px;
         display: inline-block;
         height: 32px;
-        margin-top: -4px;
+        /* margin-top: -4px; */
         width: 40px;
       }
       .img-thumb {
@@ -251,6 +251,9 @@
         border-radius: 3px;
       }
       .tile-option select {
+        margin-bottom: 5px;
+      }
+      .tile-option input {
         margin-bottom: 5px;
       }
       .interaction-ui {
@@ -997,6 +1000,7 @@
           </asset-browser>
           <button class='btn btn-default' @click="onAddTile('flat', 'flat.png')">Flat</button>
           <button class='btn btn-default' @click="onAddTile('time', 'time.png')">Time</button>
+          <button class='btn btn-default' @click="onAddTile('countdown', 'countdown.png')">Countdown</button>
         </div>
         <div>
           <table class="table table-condensed table-bordered table-hover table-clickable">
@@ -1053,6 +1057,10 @@
             v-if="selected_tile.type == 'time'"
             :tile="selected_tile"
             @onSetTileConfig="onSetTileConfig(selected_tile_id, $event)"/>
+          <tile-option-countdown
+            v-if="selected_tile.type == 'countdown'"
+            :tile="selected_tile"
+            @onSetTileConfig="onSetTileConfig(selected_tile_id, $event)"/>
           <tile-option-child
             v-if="selected_tile.type == 'child'"
             :tile="selected_tile"
@@ -1084,7 +1092,11 @@
             </span>
             <span v-else-if="tile.type == 'time'">
               <img :src="thumb_url" width=20 height=20>
-              Time / Countdown display
+              Time Display
+            </span>
+            <span v-else-if="tile.type == 'countdown'">
+              <img :src="thumb_url" width=20 height=20>
+              Countdown Display
             </span>
             <span v-else>
               <img :src="thumb_url" width=20 height=20>
@@ -1353,6 +1365,49 @@
         <template v-else>
           <label class='field-label'>Not implemented yet</label><br/>
         </template>
+      </div>
+    </script>
+
+    <script type="text/x-template" id="tile-option-countdown">
+      <div class='tile-option'>
+        <div class='row'>
+          <div class='col-xs-6'>
+            <label class='field-label'>Countdown Target</label><br/>
+            <input placeholder="YYYY-MM-DD HH:MM:SS in setup's timezone" v-model="target" class='form-control'/>
+          </div>
+          <div class='col-xs-6'>
+            <label class='field-label'>Mode</label><br/>
+            <select-dropdown
+              :selected="config.mode || 'countdown'"
+              :values="modes"
+              @onSelected="onSetValue('mode', $event)"/>
+            </select-dropdown>
+          </div>
+        </div>
+        <div>
+          <label class='field-label'>Presentation</label><br/>
+          <select-dropdown
+            :selected="config.type || 'hms'"
+            :values="types"
+            @onSelected="onSetValue('type', $event)"/>
+          </select-dropdown>
+          <select-dropdown
+            :selected="config.align || 'center'"
+            :values="aligns"
+            @onSelected="onSetValue('align', $event)"/>
+          </select-dropdown>
+          <select-dropdown
+            :selected="config.locale || 'english'"
+            :values="locales"
+            @onSelected="onSetValue('locale', $event)"/>
+          </select-dropdown>
+          <select-dropdown
+            :selected="config.font || 'default'"
+            :values="fonts"
+            @onSelected="onSetValue('font', $event)"/>
+          </select-dropdown>
+          <input type="color" v-model="color" class='color-pick'/>
+        </div>
       </div>
     </script>
 

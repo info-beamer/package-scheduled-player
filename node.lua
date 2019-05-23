@@ -10,7 +10,7 @@ local helper = require "helper"
 local placement = require "placement"
 local easing = require "easing"
 
-local min, max, abs, floor = math.min, math.max, math.abs, math.floor
+local min, max, abs, floor, ceil = math.min, math.max, math.abs, math.floor, math.ceil
 
 local font_regl = resource.load_font "default-font.ttf"
 local font_bold = resource.load_font "default-font-bold.ttf"
@@ -176,6 +176,38 @@ end
 
 local screen = Screen()
 
+local function FontCache()
+    local fonts = {}
+
+    local function get(filename)
+        local font = fonts[filename]
+        if not font then
+            font = {
+                obj = resource.load_font(filename),
+            }
+            fonts[filename] = font
+        end
+        font.lru = sys.now()
+        return font.obj
+    end
+
+    local function tick()
+        for filename, font in pairs(fonts) do
+            if sys.now() - font.lru > 300 then
+                log("fontcache", "purging font %s", filename)
+                fonts[filename] = nil
+            end
+        end
+    end
+
+    return {
+        get = get;
+        tick = tick;
+    }
+end
+
+local FontCache = FontCache()
+
 local error_img = resource.create_colored_texture(1,0,0,1)
 local function ImageCache()
     local images = {}
@@ -301,7 +333,32 @@ local function Clocks()
     }
 end
 
-local clocks = Clocks()
+local Clocks = Clocks()
+
+local function Countdowns()
+    local countdowns = {}
+
+    util.data_mapper{
+        ["countdown"] = function(update)
+            local update = json.decode(update)
+            countdowns[update.target] = update.unix
+        end;
+    }
+
+    local function delta(target)
+        local unix = countdowns[target]
+        if not unix then
+            return 0
+        end
+        return unix - os.time()
+    end
+
+    return {
+        delta = delta;
+    }
+end
+
+local Countdowns = Countdowns()
 
 
 -- clock object pointing to the configured schedule timezone
@@ -309,7 +366,7 @@ local schedule_clock = setmetatable({
     tz = "UTC",
 }, {
     __index = function(config, key)
-        return clocks.get(config.tz)[key]
+        return Clocks.get(config.tz)[key]
     end,
 })
 node.event("config_updated", function(config)
@@ -318,7 +375,7 @@ end)
 
 local function clock_for_tz_or_default(tz)
     if tz then
-        return clocks.get(tz)
+        return Clocks.get(tz)
     else
         return schedule_clock
     end
@@ -853,6 +910,92 @@ local function FlatTile(asset, config, x1, y1, x2, y2)
     end
 end
 
+local function CountdownTile(asset, config, x1, y1, x2, y2)
+    local target = config.target
+    local type = config.type
+    local r, g, b = helper.parse_rgb(config.color or "#333333")
+    local align = config.align or "center"
+    local mode = config.mode or "countdown"
+    local size = y2 - y1
+    local font = ({
+        default = font_regl,
+        digital = font_7seg,
+    })[config.font or "default"]
+    local fmt = ({
+        german = {
+            hms = "%d Std %d Min %d Sek",
+            ms = "%d Min %d Sek",
+            hm = "%d Std %d Min",
+        },
+        english = {
+            hms = "%dh %dm %ds",
+            ms = "%dm %ds",
+            hm = "%dh %dm",
+        },
+        none = {
+            hms = "%d:%02d:%02d",
+            ms = "%d:%02d",
+            hm = "%d:%02d",
+        },
+    })[config.locale or "english"]
+
+    return function(starts, ends)
+        for now in helper.frame_between(starts, ends) do
+            local delta = Countdowns.delta(target)
+
+            delta = ceil(delta)
+
+            if mode == "countdown" then
+                delta = max(0, delta)
+            elseif mode == "countup" then
+                delta = min(0, delta)
+            end
+
+            delta = abs(delta)
+
+            local text
+            if type == "hms" then
+                text = string.format(fmt.hms,
+                    math.floor(delta / 3600),
+                    math.floor(delta % 3600 / 60),
+                    math.floor(delta % 60)
+                )
+            elseif type == "hm" then
+                text = string.format(fmt.hm,
+                    math.floor(delta / 3600),
+                    math.floor(delta % 3600 / 60)
+                )
+            elseif type == "adaptive_hms" then
+                if abs(delta) < 120 * 60 then
+                    text = string.format(fmt.ms,
+                        math.floor(delta / 60),
+                        math.floor(delta % 60)
+                    )
+                else
+                    text = string.format(fmt.hms,
+                        math.floor(delta / 3600),
+                        math.floor(delta % 3600 / 60),
+                        math.floor(delta % 60)
+                    )
+                end
+            end
+
+            local w = font:width(text, size)
+
+            local x
+            if align == "left" then
+                x = x1
+            elseif align == "right" then
+                x = x2 - w
+            elseif align == "center" then
+                x = x1 + (x2-x1)/2 - w/2
+            end
+
+            font:write(x, y1, text, size, r,g,b,1)
+        end
+    end
+end
+
 local function TimeTile(asset, config, x1, y1, x2, y2)
     local r, g, b = helper.parse_rgb(config.color or "#333333")
     local clock = clock_for_tz_or_default(json_nullify(config.timezone))
@@ -983,38 +1126,6 @@ local function TimeTile(asset, config, x1, y1, x2, y2)
         end
     end
 end
-
-local function FontCache()
-    local fonts = {}
-
-    local function get(filename)
-        local font = fonts[filename]
-        if not font then
-            font = {
-                obj = resource.load_font(filename),
-            }
-            fonts[filename] = font
-        end
-        font.lru = sys.now()
-        return font.obj
-    end
-
-    local function tick()
-        for filename, font in pairs(fonts) do
-            if sys.now() - font.lru > 300 then
-                log("fontcache", "purging font %s", filename)
-                fonts[filename] = nil
-            end
-        end
-    end
-
-    return {
-        get = get;
-        tick = tick;
-    }
-end
-
-local FontCache = FontCache()
 
 local function MarkupTile(asset, config, x1, y1, x2, y2)
     local fade_time = config.fade_time or 0
@@ -1316,6 +1427,7 @@ local function Scheduler(page_source, job_queue)
                 child = ChildTile,
                 flat = FlatTile,
                 time = TimeTile,
+                countdown = CountdownTile,
                 markup = MarkupTile,
             })[tile.type]
 

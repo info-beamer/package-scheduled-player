@@ -30,12 +30,16 @@ all_timezones = {
     schedule_tz.zone: schedule_tz,
 }
 for tile in iter_tiles('time'):
-    print >>sys.stderr, tile
     tile_tz = tile['config'].get('timezone')
     if tile_tz:
         all_timezones[tile_tz] = pytz.timezone(tile_tz)
-
 print >>sys.stderr, all_timezones
+
+countdowns = set()
+for tile in iter_tiles('countdown'):
+    countdowns.add(tile['config'].get('target', ''))
+print >>sys.stderr, countdowns
+
 
 try:
     sim_date, sim_time = config.time.strip().split()
@@ -92,6 +96,20 @@ def send_clock(tz):
         diff = diff.total_seconds(),
     )))
 
+def send_countdown(countdown_target):
+    try:
+        target = datetime.strptime(countdown_target, "%Y-%m-%d %H:%M:%S")
+    except ValueError as err:
+        traceback.print_exc()
+        return
+    target = schedule_tz.localize(target)
+    target = target.astimezone(pytz.UTC)
+    unix = timegm(target.timetuple())
+    node['/countdown'](json.dumps(dict(
+        target = countdown_target,
+        unix = unix,
+    )))
+
 def device_event(event):
     print >>sys.stderr, event
 
@@ -136,6 +154,8 @@ def send_time():
         return
     for name, tz in all_timezones.iteritems():
         send_clock(tz)
+    for target in countdowns:
+        send_countdown(target)
     time.sleep(0.5)
 
 def monitor_gpio():

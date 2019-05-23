@@ -1190,6 +1190,47 @@ Vue.component('tile-option-time', TileOption.extend({
   }
 }))
 
+Vue.component('tile-option-countdown', TileOption.extend({
+  template: '#tile-option-countdown',
+  data: () => ({
+    types: [
+      ["hms", "Hours + Minutes + Seconds"],
+      ["hm", "Hours + Minutes"],
+      ["adaptive_hms", "Adapt with Hours/Minutes/Seconds"],
+    ],
+    modes: [
+      ["countdown", "Count down, then stop"],
+      ["countup", "Wait, then count up"],
+      ["both", "Count down, then up"],
+    ],
+    aligns: [
+      ["center", "Centered"],
+      ["left", "Left aligned"],
+      ["right", "Right aligned"],
+    ],
+    locales: [
+      ["english", "English"],
+      ["german", "German"],
+      ["none", "Neutral"],
+    ],
+    fonts: [
+      ["default", "Default font"],
+      ["digital", "Digital font"],
+    ],
+  }),
+  computed: {
+    target: {
+      get() { return this.config.target || "" },
+      set(value) { this.onSetValue('target', value) },
+    },
+    color: {
+      get() { return this.config.color || "#333333" },
+      set(value) { this.onSetValue('color', value) },
+    },
+  }
+}))
+
+
 Vue.component('tile-option-flat', TileOption.extend({
   template: '#tile-option-flat',
   data: () => ({

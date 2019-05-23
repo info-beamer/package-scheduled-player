@@ -122,6 +122,7 @@
                     ["markup", "Markup"],
                     ["flat", "Flat"],
                     ["time", "Time"],
+                    ["countdown", "Countdown"],
                     ["page", "Page Content"]
                 ],
                 "default": "image"
@@ -253,7 +254,8 @@
                         ["child", "Child"],
                         ["markup", "Markup"],
                         ["flat", "Flat"],
-                        ["time", "Time"]
+                        ["time", "Time"],
+                        ["countdown", "Countdown"]
                     ],
                     "default": "image"
                 }, {
