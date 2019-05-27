@@ -162,6 +162,10 @@ local function Screen()
         return placer.place(...)
     end
 
+    local function set_scissor(...)
+        return placer.scissor(...)
+    end
+
     local function get_rotation()
         return rotation
     end
@@ -169,6 +173,7 @@ local function Screen()
     return {
         setup = setup;
         place_video = place_video;
+        set_scissor = set_scissor;
         frame_time = frame_time;
         get_rotation = get_rotation;
     }
@@ -479,6 +484,7 @@ tile_loader.before_load = function(tile, exports)
 
     exports.screen = {
         place_video = screen.place_video;
+        set_scissor = screen.set_scissor;
         get_rotation = screen.get_rotation;
     }
 

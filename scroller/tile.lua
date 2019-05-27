@@ -1,7 +1,6 @@
 local api, CHILDS, CONTENTS = ...
 
 local json = require "json"
-local scissors = sys.get_ext "scissors"
 
 local font
 local color
@@ -155,9 +154,9 @@ end
 
 function M.task(starts, ends, config, x1, y1, x2, y2)
     for now in api.frame_between(starts, ends) do
-        scissors.set(x1, y1, x2, y2)
+        api.screen.set_scissor(x1, y1, x2, y2)
         draw_scroller(x1, y1, x2-x1, y2-y1)
-        scissors.disable()
+        api.screen.set_scissor()
     end
 end
 

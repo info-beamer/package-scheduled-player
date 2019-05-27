@@ -1,4 +1,5 @@
 local matrix = require "matrix2d"
+local scissors = sys.get_ext "scissors"
 
 local Screen = function(target, surface)
     local screen = sys.get_ext "screen"
@@ -67,11 +68,23 @@ local Screen = function(target, surface)
         error(string.format("cannot rotate by %d degree", surface.rotate))
     end
 
-    local function place(raw, layer, alpha, x1, y1, x2, y2)
+    local function project(x1, y1, x2, y2)
         local tx1, ty1 = surface2screen(x1, y1)
         local tx2, ty2 = surface2screen(x2, y2)
-        local x1, y1 = math.floor(math.min(tx1, tx2)), math.floor(math.min(ty1, ty2))
-        local x2, y2 = math.floor(math.max(tx1, tx2)), math.floor(math.max(ty1, ty2))
+        return math.floor(math.min(tx1, tx2)), math.floor(math.min(ty1, ty2)),
+               math.floor(math.max(tx1, tx2)), math.floor(math.max(ty1, ty2))
+    end
+
+    local function scissor(x1, y1, x2, y2)
+        x1 = x1 or 0
+        y1 = y1 or 0
+        x2 = x2 or WIDTH
+        y2 = y2 or HEIGHT
+        scissors.set(project(x1, y1, x2, y2))
+    end
+
+    local function place(raw, layer, alpha, x1, y1, x2, y2)
+        x1, y1, x2, y2 = project(x1, y1, x2, y2)
         local w, h = target.width, target.height
         local outside = (
             (x1 <= 0 and x2 <= 0) or
@@ -87,6 +100,7 @@ local Screen = function(target, surface)
     end
 
     return {
+        scissor = scissor;
         setup = setup;
         place = place;
     }
