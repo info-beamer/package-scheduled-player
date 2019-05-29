@@ -26,23 +26,6 @@ util.data_mapper{
     end;
 }
 
-
-function M.updated_schedule_json(new_schedule)
-    print "new schedule"
-    schedule = new_schedule
-    for idx = 1, #schedule do
-        local talk = schedule[idx]
-        if talk.lang ~= "" then
-            talk.title = talk.title .. " (" .. talk.lang .. ")"
-        end
-
-        talk.track = tracks[talk.track] or {
-            name = talk.track,
-            background = fallback_track_background,
-        }
-    end
-end
-
 function M.updated_config_json(config)
     font = resource.load_font(api.localized(config.font.asset_name))
     info_font = resource.load_font(api.localized(config.info_font.asset_name))
@@ -85,6 +68,26 @@ function M.updated_config_json(config)
     pp(tracks)
 end
 
+function M.updated_schedule_json(new_schedule)
+    print "new schedule"
+    schedule = new_schedule
+    for idx = #schedule, 1, -1 do
+        local talk = schedule[idx]
+        if not rooms[talk.place] then
+            table.remove(schedule, idx)
+        else
+            if talk.lang ~= "" then
+                talk.title = talk.title .. " (" .. talk.lang .. ")"
+            end
+
+            talk.track = tracks[talk.track] or {
+                name = talk.track,
+                background = fallback_track_background,
+            }
+        end
+    end
+end
+
 local function wrap(str, font, size, max_w)
     local lines = {}
     local space_w = font:width(" ", size)
@@ -123,7 +126,7 @@ local function check_next_talk()
         local talk = schedule[idx]
 
         -- Find next talk
-        if current_room and (current_room.group == "*" or current_room.group == talk.group) and rooms[talk.place] then
+        if current_room and (current_room.group == "*" or current_room.group == talk.group) then
             if not room_next[talk.place] and 
                 talk.start_unix > now - 25 * 60 then
                 room_next[talk.place] = talk
@@ -424,6 +427,7 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
             talk.title,
             font, title_size, a.width - split_x
         )
+
         local info_lines = wrap(
             rooms[talk.place].name_short .. " with " .. table.concat(talk.speakers, ", "), 
             font, info_size, a.width - split_x

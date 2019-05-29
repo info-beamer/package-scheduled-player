@@ -74,7 +74,7 @@
         "doc_link": true,
         "type": "list",
         "itemname": "Room",
-        "hint": "Room definitions",
+        "hint": "Define all rooms in your schedule and assign them to devices",
         "items": [{
             "title": "Schedule Name",
             "ui_width": 3,
