@@ -86,7 +86,13 @@ local function setup(module_name)
         )
         modules[child] = module
         module_event(child, 'load')
+
+        local contents = {}
         for content, version in pairs(modules_content_versions[child]) do
+            contents[#contents+1] = content
+        end
+        table.sort(contents)
+        for n, content in ipairs(contents) do
             content_update_event(child, content)
         end
         node.gc()
