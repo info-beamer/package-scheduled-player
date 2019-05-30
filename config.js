@@ -1196,6 +1196,7 @@ Vue.component('tile-option-countdown', TileOption.extend({
     types: [
       ["hms", "Hours + Minutes + Seconds"],
       ["hm", "Hours + Minutes"],
+      ["adaptive_dhm", "Adapt with Days/Hours/Minutes"],
       ["adaptive_hms", "Adapt with Hours/Minutes/Seconds"],
     ],
     modes: [

@@ -929,11 +929,13 @@ local function CountdownTile(asset, config, x1, y1, x2, y2)
     })[config.font or "default"]
     local fmt = ({
         german = {
+            dh = "%d Tage, %d Min.",
             hms = "%d Std %d Min %d Sek",
             ms = "%d Min %d Sek",
             hm = "%d Std %d Min",
         },
         english = {
+            dh = "%d days, %d min",
             hms = "%dh %dm %ds",
             ms = "%dm %ds",
             hm = "%dh %dm",
@@ -971,16 +973,34 @@ local function CountdownTile(asset, config, x1, y1, x2, y2)
                     math.floor(delta / 3600),
                     math.floor(delta % 3600 / 60)
                 )
-            elseif type == "adaptive_hms" then
-                if abs(delta) < 120 * 60 then
+            elseif type == "adaptive_dhm" then
+                if abs(delta) > 86400 then
+                    text = string.format(fmt.dh,
+                        math.floor(delta / 86400),
+                        math.floor(delta % 86400 / 3600)
+                    )
+                elseif abs(delta) > 120 * 60 then
+                    text = string.format(fmt.hms,
+                        math.floor(delta / 3600),
+                        math.floor(delta % 3600 / 60),
+                        math.floor(delta % 60)
+                    )
+                else
                     text = string.format(fmt.ms,
                         math.floor(delta / 60),
                         math.floor(delta % 60)
                     )
-                else
+                end
+            elseif type == "adaptive_hms" then
+                if abs(delta) > 120 * 60 then
                     text = string.format(fmt.hms,
                         math.floor(delta / 3600),
                         math.floor(delta % 3600 / 60),
+                        math.floor(delta % 60)
+                    )
+                else
+                    text = string.format(fmt.ms,
+                        math.floor(delta / 60),
                         math.floor(delta % 60)
                     )
                 end
