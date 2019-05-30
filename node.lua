@@ -929,13 +929,13 @@ local function CountdownTile(asset, config, x1, y1, x2, y2)
     })[config.font or "default"]
     local fmt = ({
         german = {
-            dh = "%d Tage, %d Std.",
+            dh = "%d Tag(e), %d Std.",
             hms = "%d Std %d Min %d Sek",
             ms = "%d Min %d Sek",
             hm = "%d Std %d Min",
         },
         english = {
-            dh = "%d days, %dh",
+            dh = "%d day(s), %dh",
             hms = "%dh %dm %ds",
             ms = "%dm %ds",
             hm = "%dh %dm",
