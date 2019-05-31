@@ -194,11 +194,12 @@ local function view_next_talk(starts, ends, config, x1, y1, x2, y2)
     local abstract_size = math.floor(font_size * 0.8)
     local speaker_size = math.floor(font_size * 0.8)
 
+    local dummy = "in XXXX min"
     if align == "left" then
         col1 = 0
-        col2 = 0 + font:width("88:88", time_size)*2
+        col2 = 0 + font:width(dummy, time_size)
     else
-        col1 = -font:width("88:88", time_size)*2
+        col1 = -font:width(dummy, time_size)
         col2 = 0
     end
 
