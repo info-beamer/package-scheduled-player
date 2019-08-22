@@ -119,6 +119,10 @@ hosted will offer. Feedback is always welcome: https://info-beamer.com/contact
 Got feedback? Don't hesitate to get on contact with info-beamer support here:
 https://info-beamer.com/contact
 
+### Version beta17
+
+ * Now compatible with the Pi4
+
 ### Version beta16
 
  * Added 'fallback' schedule option: Playlist scheduled as 'fallback' are only active if no other non-fallback playlist is scheduled.
