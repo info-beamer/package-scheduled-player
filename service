@@ -25,6 +25,10 @@ def iter_tiles(types=None):
             for tile in page['tiles']:
                 if not types or tile['type'] in types:
                     yield tile
+    for layout in config.layouts:
+        for tile in layout['tiles']:
+            if not types or tile['type'] in types:
+                yield tile
 
 all_timezones = {
     schedule_tz.zone: schedule_tz,
