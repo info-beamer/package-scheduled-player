@@ -918,7 +918,7 @@ end
 
 local function CountdownTile(asset, config, x1, y1, x2, y2)
     local target = config.target
-    local type = config.type
+    local type = config.type or "hms"
     local r, g, b = helper.parse_rgb(config.color or "#333333")
     local align = config.align or "center"
     local mode = config.mode or "countdown"
