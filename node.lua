@@ -833,7 +833,7 @@ local function Streams()
                     audio = audio,
                     raw = true,
                 }
-                stream.vid:layer(-10):target(0, 0, 0, 0):alpha(0)
+                stream.vid:layer(-10):place(0, 0, 0, 0):alpha(0)
             end
         end
 
