@@ -142,6 +142,9 @@ const store = new Vuex.Store({
       }
       recalc_layout(state);
     },
+    assets_update(state, assets) {
+      state.assets = assets;
+    },
     config_update(state, {key, value}) {
       Vue.set(state.config, key, value);
       recalc_layout(state);
@@ -1486,6 +1489,11 @@ Vue.component('tile-detail', {
   }
 })
 
+// --------------------------
+// Default built-in asset browser
+// Might be replaced further down
+// with the native chooser.
+// --------------------------
 Vue.component('asset-browser', {
   template: '#asset-browser',
   props: ["valid", "title", "help"],
@@ -2084,15 +2092,40 @@ Vue.component('interaction-ui', {
   }
 })
 
+function install_native_asset_chooser() {
+  console.log("installing native asset chooser");
+  delete Vue.options.components['asset-browser'];
+  Vue.component('asset-browser', {
+    template: '#asset-browser-native',
+    props: ["valid", "title", "help"],
+    methods: {
+      onOpen() {
+        var that = this;
+        ib.assetChooser({
+          filter: this.valid.split(',')
+        }).then(function(selected) {
+          selected && that.$emit('assetSelected', selected.id);
+        })
+      },
+    }
+  })
+}
 
-const app = new Vue({
+new Vue({
   el: "#app",
   store,
 })
 
 ib.setDefaultStyle();
 ib.ready.then(() => {
-  load_childs(ib.node_assets).then(function() {
+  if (ib.assetChooser) {
+    install_native_asset_chooser()
+  }
+  ib.onAssetUpdate(() => {
+    console.log("assets updated")
+    store.commit('assets_update', ib.assets)
+  })
+  load_childs(ib.node_assets).then(() => {
     store.commit('init', {
       assets: ib.assets,
       node_assets: ib.node_assets,

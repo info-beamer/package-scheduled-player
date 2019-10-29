@@ -1449,6 +1449,11 @@
       </div>
     </script>
 
+    <script type="text/x-template" id="asset-browser-native">
+      <button class='btn btn-default' @click="onOpen">
+        {{title}}
+      </button>
+    </script>
 
     <script type="text/x-template" id="asset-browser">
       <span>
@@ -1588,7 +1593,7 @@
         }
       }
       MOCK_DEVICES = [
-      ],
+      ]
       MOCK_NODE_ASSETS = {
         "default-font.ttf": {
           id: "default-font.ttf",
@@ -1650,7 +1655,11 @@
           filetype: 'child',
           filename: 'browser',
         },
-      },
+      }
+      MOCK_ASSET_CHOOSER_RESPONSE = {
+        id: 1,
+        duration: 10,
+      }
       MOCK_CONFIG = {
         timezone: "Europe/Berlin",
         rotation: 180,

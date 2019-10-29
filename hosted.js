@@ -6,7 +6,7 @@
  *
  *  BSD 2-Clause License
  *
- *  Copyright (c) 2017, Florian Wesch <fw@dividuum.de>
+ *  Copyright (c) 2017-2019 Florian Wesch <fw@info-beamer.com>
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,9 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+(function() {
 
 var head = document.getElementsByTagName("head")[0];
-
 var asset_root = "https://cdn.infobeamer.com/s/mock-use-latest/";
 
 function setupResources(js, css) {
@@ -76,16 +76,37 @@ var ib = {
   config: window.MOCK_CONFIG,
   devices: window.MOCK_DEVICES,
   doc_link_base: 'data:text/plain,This would have opened the package documentation for ',
+  apis: {
+    geo: {
+      get: function(params) {
+        if (!params.q) {
+          console.error("no q parameter for weather query");
+        }
+        return new Promise(function(resolve, reject) {
+          setTimeout(function() { // simulate latency
+            resolve({"hits":[
+              {"lat":49.00937,"lon":8.40444,"name":"Karlsruhe (Baden-W\u00fcrttemberg, Germany)"},
+              {"lat":48.09001,"lon":-100.62042,"name":"Karlsruhe (North Dakota, United States)"}
+            ]})
+          }, 800);
+        })
+      },
+    }
+  }
 }
 
 ib.setDefaultStyle = function() {
   setupResources([], ['reset.css', 'bootstrap.css'])
 }
 
-ib.ready = {
-  then: function(cb) {
-    console.log("[MOCK HOSTED.JS] ready(...)");
-    cb(ib.config)
+var asset_chooser_response = window.MOCK_ASSET_CHOOSER_RESPONSE
+if (asset_chooser_response) {
+  console.log("[MOCK HOSTED.JS] emulating asset chooser");
+  ib.assetChooser = function() {
+    console.log("[MOCK HOSTED.JS] asset chooser mockup returns", asset_chooser_response);
+    return new Promise(function(resolve) {
+      resolve(asset_chooser_response);
+    })
   }
 }
 
@@ -104,4 +125,14 @@ ib.getDocLink = function(name) {
   return ib.doc_link_base + name;
 }
 
-window.infobeamer = ib;
+ib.onAssetUpdate = function(cb) {
+  console.warn("[MOCK HOSTED.JS] onAssetUpdate is a no-op in the mock environment");
+}
+
+ib.ready = new Promise(function(resolve) {
+  console.log("[MOCK HOSTED.JS] ready");
+  resolve(ib.config);
+})
+
+window.infobeamer = window.ib = ib;
+})();
