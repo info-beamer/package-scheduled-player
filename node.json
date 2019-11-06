@@ -263,14 +263,14 @@
                     "default": "image"
                 }, {
                     "title": "Asset",
-                    "ui_width": 4,
+                    "ui_width": 5,
                     "name": "asset",
                     "type": "resource",
                     "valid": ["image", "video", "font", "child"],
                     "default": "empty.png"
                 }, {
                     "title": "Config",
-                    "ui_width": 4,
+                    "ui_width": 3,
                     "name": "config",
                     "type": "json",
                     "default": {}
