@@ -100,13 +100,13 @@
         "itemname": "Layout",
         "items": [{
             "title": "Name",
-            "ui_width": 4,
+            "ui_width": 12,
             "name": "name",
             "type": "string",
             "default": "Layout 1"
         }, {
             "title": "Tiles",
-            "ui_width": 4,
+            "ui_width": 12,
             "name": "tiles",
             "type": "list",
             "itemname": "Tile",
@@ -239,7 +239,7 @@
                 "default": 0.5
             }, {
                 "title": "Tiles",
-                "ui_width": 4,
+                "ui_width": 12,
                 "name": "tiles",
                 "type": "list",
                 "itemname": "Tile",

@@ -8,13 +8,13 @@
         "type": "section"
     }, {
         "title": "Font",
-        "ui_width": 3,
+        "ui_width": 4,
         "name": "font",
         "type": "font",
         "default": "silkscreen.ttf"
     }, {
         "title": "Info Font",
-        "ui_width": 3,
+        "ui_width": 4,
         "name": "info_font",
         "type": "font",
         "default": "silkscreen.ttf"
