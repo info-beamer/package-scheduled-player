@@ -69,13 +69,13 @@
             "default": "primary"
         }]
     }, {
-		"title": "Show Language Tags", 
-		"name": "show_language_tags",
-		"type": "boolean",
-		"itemname": "show_language_tags",
-		"hint": "Show Language Tag at end of talk names", 
-		"default": true
-	}, {
+        "title": "Show Language Tags", 
+        "name": "show_language_tags",
+        "type": "boolean",
+        "itemname": "show_language_tags",
+        "hint": "Show Language Tag at end of talk names", 
+        "default": true
+    }, {
         "title": "Rooms",
         "name": "rooms",
         "doc_link": true,
