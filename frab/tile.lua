@@ -17,6 +17,7 @@ local current_talk
 local other_talks = {}
 local last_check_min = 0
 local day = 0
+local show_language_tags = true
 
 local M = {}
 
@@ -29,6 +30,7 @@ util.data_mapper{
 function M.updated_config_json(config)
     font = resource.load_font(api.localized(config.font.asset_name))
     info_font = resource.load_font(api.localized(config.info_font.asset_name))
+	show_language_tags = config.show_language_tags
 
     rooms = {}
     for idx, room in ipairs(config.rooms) do
@@ -77,7 +79,11 @@ function M.updated_schedule_json(new_schedule)
             table.remove(schedule, idx)
         else
             if talk.lang ~= "" then
-                talk.title = talk.title .. " (" .. talk.lang .. ")"
+				if show_language_tags then
+                	talk.title = talk.title .. " (" .. talk.lang .. ")"
+				else
+                	talk.title = talk.title
+				end
             end
 
             talk.track = tracks[talk.track] or {
