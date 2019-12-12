@@ -1,72 +1,76 @@
 'use strict';
 
-const SCREEN_WIDTH = 718;
+const SCREEN_WIDTH = 718
 
 // For some reason sortable.js doesn't properly
 // work in chrome 62 without using the forceFallback
 // option :-\
-var isChrome = !!window.chrome;
+const isChrome = !!window.chrome
 
 function recalc_layout(state) {
-  var is_portrait = state.config.rotation == 90 || 
-                    state.config.rotation == 270;
-  var width, height;
+  const is_portrait = state.config.rotation == 90 ||
+                      state.config.rotation == 270
+  let width, height
   if (is_portrait) {
-    width = state.config.resolution[1];
-    height = state.config.resolution[0];
+    width = state.config.resolution[1]
+    height = state.config.resolution[0]
   } else {
-    width = state.config.resolution[0];
-    height = state.config.resolution[1];
+    width = state.config.resolution[0]
+    height = state.config.resolution[1]
   }
-  var scale = SCREEN_WIDTH / width;
+  let scale = SCREEN_WIDTH / width
   if (is_portrait)
-    scale /= 2;
-  Vue.set(state.screen, 'width', width);
-  Vue.set(state.screen, 'height', height);
-  Vue.set(state.screen, 'scale', scale);
-  console.log("recalculated layout");
+    scale /= 2
+  Vue.set(state.screen, 'width', width)
+  Vue.set(state.screen, 'height', height)
+  Vue.set(state.screen, 'scale', scale)
+  console.log("recalculated layout")
+}
+
+function deepcopy(o) {
+  return JSON.parse(JSON.stringify(o))
 }
 
 function clamp(v, a, b) {
-  return Math.max(a, Math.min(b, v));
+  return Math.max(a, Math.min(b, v))
 }
 
 function color_rgb_to_ib(rgb, a) {
-  rgb = rgb.substring(1);
-  var r = parseInt(rgb.substring(0,2), 16) / 255;
-  var g = parseInt(rgb.substring(2,4), 16) / 255;
-  var b = parseInt(rgb.substring(4,6), 16) / 255;
-  a = a == undefined ? 1 : a;
-  return [r, g, b, a];
+  rgb = rgb.substring(1)
+  var r = parseInt(rgb.substring(0,2), 16) / 255
+  var g = parseInt(rgb.substring(2,4), 16) / 255
+  var b = parseInt(rgb.substring(4,6), 16) / 255
+  a = a == undefined ? 1 : a
+  return [r, g, b, a]
 }
 
 function to2hex(val) {
-  var out = Math.floor(val * 255).toString(16);
-  if (out.length < 2) out = "0" + out;
-  return out;
+  let out = Math.floor(val * 255).toString(16)
+  if (out.length < 2) out = "0" + out
+  return out
 }
 
 function color_ib_to_rgb(ib) {
   return "#" + to2hex(ib[0]) + to2hex(ib[1]) + to2hex(ib[2])
 }
 
-var ChildTile = (function() {
-  var childs = {}
+const ChildTile = (function() {
+  let childs = {}
   function register(child) {
-    var name = document.currentScript.dataset.name;
-    console.log('registered child plugin', name);
+    const name = document.currentScript.dataset.name
+    console.log('registered child plugin', name)
     childs[name] = child
   }
   function config_value(key, default_value, convert) {
     return {
       get() {
-        var value = this.config[key];
-        return value == undefined ? default_value : value;
+        const value = this.config[key]
+        return value == undefined ? default_value : value
       },
       set(value) {
         if (convert != undefined)
           value = convert(value)
-        this.$emit('setConfig', key, value);
+        this.$emit('setConfig', key, value)
       }
     }
   }
@@ -238,6 +242,10 @@ const store = new Vuex.Store({
         pages.splice(0, 0, new_page);
       }
     },
+    page_copy(state, {schedule_id, page_id}) {
+      let page = deepcopy(state.config.schedules[schedule_id].pages[page_id])
+      state.config.schedules[schedule_id].pages.splice(page_id, 0, page);
+    },
     page_delete(state, {schedule_id, page_id}) {
       if (state.config.scratch.debug_schedule_id == schedule_id &&
           state.config.scratch.debug_page_id == page_id)
@@ -264,24 +272,26 @@ const store = new Vuex.Store({
 
     // Page Tile mutations
     page_tile_create(state, {schedule_id, page_id, tile}) {
-      var page = state.config.schedules[schedule_id].pages[page_id];
-      page.tiles.push(tile);
-      Vue.set(state.config.schedules[schedule_id].pages[page_id], 'selected', page.tiles.length-1);
-
-      var assets = state.assets;
-      var node_assets = state.node_assets;
-      var auto_duration = 2;
-      for (var i = 0; i < page.tiles.length; i++) {
-        var tile = page.tiles[i];
-        var asset_info = assets[tile.asset] || node_assets[tile.asset];
+      let page = state.config.schedules[schedule_id].pages[page_id]
+      page.tiles.push(tile)
+      Vue.set(state.config.schedules[schedule_id].pages[page_id], 'selected', page.tiles.length-1)
+    },
+    page_update_auto_duration(state, {schedule_id, page_id}) {
+      const page = state.config.schedules[schedule_id].pages[page_id]
+      const assets = state.assets
+      const node_assets = state.node_assets
+      let auto_duration = 2
+      for (let i = 0; i < page.tiles.length; i++) {
+        const tile = page.tiles[i]
+        const asset_info = assets[tile.asset] || node_assets[tile.asset]
         if (asset_info.metadata && asset_info.metadata.duration) {
-          auto_duration = Math.max(auto_duration, asset_info.metadata.duration);
+          auto_duration = Math.max(auto_duration, asset_info.metadata.duration)
         } else {
-          auto_duration = Math.max(auto_duration, 10);
+          auto_duration = Math.max(auto_duration, 10)
         }
       }
-      console.log("tile auto duration is", auto_duration);
-      Vue.set(state.config.schedules[schedule_id].pages[page_id], 'auto_duration', auto_duration);
+      console.log("tile auto duration is", auto_duration)
+      Vue.set(state.config.schedules[schedule_id].pages[page_id], 'auto_duration', auto_duration)
     },
     page_tile_delete(state, {schedule_id, page_id, tile_id}) {
       var page = state.config.schedules[schedule_id].pages[page_id];
@@ -305,6 +315,10 @@ const store = new Vuex.Store({
       tile.y1 = Math.round(Math.max(Math.min(y1, y2), 0));
       tile.x2 = Math.round(Math.min(Math.max(x1, x2), screen.width));
       tile.y2 = Math.round(Math.min(Math.max(y1, y2), screen.height));
+    },
+    page_tile_set_asset(state, {schedule_id, page_id, tile_id, asset_spec}) {
+      console.log({schedule_id, page_id, tile_id, asset_spec})
+      state.config.schedules[schedule_id].pages[page_id].tiles[tile_id].asset = asset_spec
     },
     page_tile_set_config(state, {schedule_id, page_id, tile_id, key, value}) {
       Vue.set(state.config.schedules[schedule_id].pages[page_id].tiles[tile_id].config, key, value);
@@ -356,11 +370,24 @@ const store = new Vuex.Store({
       tile.x2 = Math.round(Math.min(Math.max(x1, x2), screen.width));
       tile.y2 = Math.round(Math.min(Math.max(y1, y2), screen.height));
     },
+    layout_tile_set_asset(state, {layout_id, tile_id, asset_spec}) {
+      state.config.layouts[layout_id].tiles[tile_id].asset = asset_spec
+    },
     layout_tile_set_config(state, {layout_id, tile_id, key, value}) {
       Vue.set(state.config.layouts[layout_id].tiles[tile_id].config, key, value);
     },
     layout_tile_update(state, {layout_id, tiles}) {
       Vue.set(state.config.layouts[layout_id], 'tiles', tiles);
+    },
+  },
+  actions: {
+    page_tile_create({commit}, {schedule_id, page_id, tile}) {
+      commit('page_tile_create', {schedule_id, page_id, tile})
+      commit('page_update_auto_duration', {schedule_id, page_id})
+    },
+    page_tile_set_asset({commit}, {schedule_id, page_id, tile_id, asset_spec}) {
+      commit('page_tile_set_asset', {schedule_id, page_id, tile_id, asset_spec})
+      commit('page_update_auto_duration', {schedule_id, page_id})
     },
   },
 })
@@ -677,7 +704,7 @@ Vue.component('schedule-panel', {
         schedule_id: this.schedule_id,
         after_page_id: page_id-1,
       })
-      this.$store.commit('page_tile_create', {
+      this.$store.dispatch('page_tile_create', {
         schedule_id: this.schedule_id,
         page_id: page_id,
         tile: {
@@ -724,8 +751,7 @@ Vue.component('schedule-row', {
         name: name,
       })
     },
-    onDelete(evt) {
-      evt.stopPropagation();
+    onDelete() {
       this.$store.commit('schedule_delete', {
         schedule_id: this.schedule_id,
       })
@@ -851,11 +877,17 @@ Vue.component('page-editor', {
     }
   },
   methods: {
+    onCopyPage(evt) {
+      this.$store.commit('page_copy', {
+        schedule_id: this.schedule_id,
+        page_id: this.page_id
+      })
+    },
     onDeletePage() {
       this.$store.commit('page_delete', {
         schedule_id: this.schedule_id,
         page_id: this.page_id
-      });
+      })
     },
     onDebug() {
       if (this.is_debugged) {
@@ -864,7 +896,7 @@ Vue.component('page-editor', {
         this.$store.commit('page_debug', {
           schedule_id: this.schedule_id,
           page_id: this.page_id
-        });
+        })
       }
     },
     onSetLayout(layout_id) {
@@ -872,31 +904,31 @@ Vue.component('page-editor', {
         schedule_id: this.schedule_id,
         page_id: this.page_id,
         layout_id: layout_id,
-      });
+      })
     },
     onMakeInteractive() {
       this.$store.commit('page_interaction_update', {
         schedule_id: this.schedule_id,
         page_id: this.page_id,
         interaction: {'key': 'space'},
-      });
+      })
     },
     onResetInteractive() {
       this.$store.commit('page_interaction_update', {
         schedule_id: this.schedule_id,
         page_id: this.page_id,
         interaction: {'key': ''},
-      });
+      })
     },
     onInteractionUpdate(interaction) {
       this.$store.commit('page_interaction_update', {
         schedule_id: this.schedule_id,
         page_id: this.page_id,
         interaction: interaction,
-      });
+      })
     },
     onAddTile(tile) {
-      this.$store.commit('page_tile_create', {
+      this.$store.dispatch('page_tile_create', {
         schedule_id: this.schedule_id,
         page_id: this.page_id,
         tile: tile,
@@ -907,7 +939,7 @@ Vue.component('page-editor', {
         schedule_id: this.schedule_id,
         page_id: this.page_id,
         tile_id: tile_id,
-      });
+      })
     },
     onPositionTile(tile_id, pos) {
       this.$store.commit('page_tile_set_pos', {
@@ -915,7 +947,15 @@ Vue.component('page-editor', {
         page_id: this.page_id,
         tile_id: tile_id,
         pos: pos,
-      });
+      })
+    },
+    onSelectTileAsset(tile_id, asset_spec) {
+      this.$store.dispatch('page_tile_set_asset', {
+        schedule_id: this.schedule_id,
+        page_id: this.page_id,
+        tile_id: tile_id,
+        asset_spec: asset_spec,
+      })
     },
     onSetTileConfig(tile_id, {key, value}) {
       this.$store.commit('page_tile_set_config', {
@@ -988,16 +1028,19 @@ Vue.component('tile-editor', {
         x2: this.screen.width,
         y2: this.screen.height,
       })
-      this.selected_tile_id = this.tiles.length-1;
+      this.selected_tile_id = this.tiles.length-1
     },
     onPositionTile(tile_id, pos) {
-      this.$emit("onPositionTile", tile_id, pos);
+      this.$emit("onPositionTile", tile_id, pos)
+    },
+    onSelectTileAsset(tile_id, asset_spec) {
+      this.$emit("onSelectTileAsset", tile_id, asset_spec)
     },
     onSetTileConfig(tile_id, kv) {
-      this.$emit("onSetTileConfig", tile_id, kv);
+      this.$emit("onSetTileConfig", tile_id, kv)
     },
     onDeleteTile(tile_id) {
-      this.$emit("onDeleteTile", tile_id);
+      this.$emit("onDeleteTile", tile_id)
     },
   }
 })
@@ -1431,36 +1474,54 @@ Vue.component('tile-detail', {
       }
     },
     asset_spec() {
-      return this.tile.asset;
+      return this.tile.asset
     },
     asset_info() {
-      var assets = this.$store.state.assets;
-      var node_assets = this.$store.state.node_assets;
-      return assets[this.asset_spec] || node_assets[this.asset_spec];
+      const assets = this.$store.state.assets;
+      const node_assets = this.$store.state.node_assets
+      return assets[this.asset_spec] || node_assets[this.asset_spec]
     },
     thumb_url() {
-      var info = this.asset_info;
-      return info.thumb + '?size=20';
+      const info = this.asset_info
+      return info.thumb + '?size=20'
     },
   },
   methods: {
     toNumber(value) {
       value = parseInt(value)
-      if (isNaN(value)) value = 0;
-      return value;
+      if (isNaN(value)) value = 0
+      return value
     },
-    onSelectTile(evt) {
-      this.$emit('onSelectTile');
+    onSelectTile() {
+      this.$emit('onSelectTile')
     },
-    onMakeFullscreen(evt) {
+    async onChooseAsset(tile_type) {
+      if (!ib.assetChooser)
+        return
+      const filter = {
+        video: ['video'],
+        rawvideo: ['video'],
+        image: ['image'],
+      }[tile_type]
+      if (!filter)
+        return
+      let selected = await ib.assetChooser({
+        filter: filter,
+        selected_asset_spec: this.asset_spec,
+      })
+      if (!selected)
+        return
+      this.$emit('onSelectTileAsset', selected.id)
+    },
+    onMakeFullscreen() {
       this.$emit('onPositionTile', {
         x1: 0,
         y1: 0,
         x2: screen.width,
         y2: screen.height,
-      });
+      })
     },
-    onOrigSize(evt) {
+    onOrigSize() {
       var width = 1280,
           height = 720; 
       var metadata = this.asset_info.metadata;
@@ -1483,7 +1544,7 @@ Vue.component('tile-detail', {
         y2: y2,
       });
     },
-    onDelete(evt) {
+    onDelete() {
       this.$emit("onTileDelete");
     },
   }
@@ -1846,12 +1907,12 @@ Vue.component('timespan-editor', {
       this.$emit('onDelete', span_id);
     },
     onSetTime(span_id, which, time) {
-      var span = JSON.parse(JSON.stringify(this.spans[span_id]));
+      var span = deepcopy(this.spans[span_id]);
       span[which] = time;
       this.$emit('onUpdate', span_id, span);
     },
     onToggle(span_id, day_id, on) {
-      var span = JSON.parse(JSON.stringify(this.spans[span_id]));
+      var span = deepcopy(this.spans[span_id]);
       span.days[day_id] = on;
       this.$emit('onUpdate', span_id, span);
     },
@@ -1909,6 +1970,13 @@ Vue.component('layout-editor', {
         pos: pos,
       });
     },
+    onSelectTileAsset(tile_id, asset_spec) {
+      this.$store.commit('layout_tile_set_asset', {
+        layout_id: this.layout_id,
+        tile_id: tile_id,
+        asset_spec: asset_spec,
+      })
+    },
     onSetTileConfig(tile_id, {key, value}) {
       this.$store.commit('layout_tile_set_config', {
         layout_id: this.layout_id,
@@ -1929,7 +1997,7 @@ Vue.component('layout-editor', {
         name: name,
       })
     },
-    onDeleteLayout(evt) {
+    onDeleteLayout() {
       this.$store.commit('layout_delete', {
         layout_id: this.layout_id,
       });

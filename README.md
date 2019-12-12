@@ -119,6 +119,11 @@ hosted will offer. Feedback is always welcome: https://info-beamer.com/contact
 Got feedback? Don't hesitate to get on contact with info-beamer support here:
 https://info-beamer.com/contact
 
+### Version 18
+
+ * Added "Copy" button to copy a page.
+ * Click on an image/video filename in the tile list to change the assets.
+
 ### Version beta17
 
  * Now compatible with the Pi4

@@ -188,7 +188,7 @@
       }
       .duration-input {
         display: inline-block;
-        width: 80px;
+        width: 70px;
       }
       .trigger-input {
         display: inline-block;
@@ -474,6 +474,7 @@
             :tiles="layout.tiles"
             @onAddTile="onAddTile"
             @onPositionTile="onPositionTile"
+            @onSelectTileAsset="onSelectTileAsset"
             @onDeleteTile="onDeleteTile"
             @onSetTileConfig="onSetTileConfig"
             @onReorderTiles="onReorderTiles"
@@ -482,7 +483,7 @@
         <div class="panel-footer">
           <div class='row'>
             <div class='col-xs-12 text-right'>
-              <button class='btn btn-danger btn-debug' @click="onDeleteLayout">
+              <button class='btn btn-danger' @click="onDeleteLayout">
                 <span class='glyphicon glyphicon-trash'></span>
                 Delete
               </button>
@@ -693,7 +694,7 @@
         </td>
         <td>{{schedule.pages.length}} pages</td>
         <td class="text-right">
-          <button class='btn btn-xs btn-danger' @click="onDelete">
+          <button class='btn btn-xs btn-danger' @click.stop="onDelete">
             <span class='glyphicon glyphicon-trash'></span>
           </button>
         </td>
@@ -736,6 +737,7 @@
             @onPositionTile="onPositionTile"
             @onDeleteTile="onDeleteTile"
             @onSetTileConfig="onSetTileConfig"
+            @onSelectTileAsset="onSelectTileAsset"
             @onReorderTiles="onReorderTiles"
           />
           <interaction-ui
@@ -746,7 +748,7 @@
         </div>
         <div class="panel-footer">
           <div class='row'>
-            <div class='col-xs-7'>
+            <div class='col-xs-8'>
               <select-dropdown
                 v-if="!show_custom_duration"
                 :selected="duration"
@@ -762,31 +764,35 @@
                   @change="onSetDuration(parseInt($event.target.value))"
                 />
               </template>
+              <button class='btn btn-default' v-if="!is_interactive" @click="onMakeInteractive">
+                Interactive
+              </button>
+              <button class='btn btn-default' v-else @click="onResetInteractive">
+                <span class='glyphicon glyphicon-ok-circle'></span>
+                Interactive
+              </button>
               <select-dropdown
                 :selected="page.layout_id"
                 :values="layouts"
                 @onSelected="onSetLayout($event)"
               />
             </div>
-            <div class='col-xs-5 text-right'>
-              <template>
-                <button class='btn btn-default' v-if="!is_interactive" @click="onMakeInteractive">
-                  Interactive
-                </button>
-                <button class='btn btn-default' v-else @click="onResetInteractive">
-                  <span class='glyphicon glyphicon-ok-circle'></span>
-                  Interactive
-                </button>
-              </template>
+            <div class='col-xs-4 text-right'>
 
               <button class='btn btn-default' @click="onDebug">
                 <span class='glyphicon glyphicon-ok-circle' v-if='is_debugged'></span>
                 Test
               </button>
-              <button class='btn btn-danger btn-debug' @click="onDeletePage">
-                <span class='glyphicon glyphicon-trash'></span>
-                Delete
-              </button>
+
+              <div class='btn-group'>
+                <button class='btn btn-default' @click="onCopyPage">
+                  Copy
+                </button>
+                <button class='btn btn-danger' @click="onDeletePage">
+                  <span class='glyphicon glyphicon-trash'></span>
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -969,6 +975,7 @@
             :is_selected="tile_id == selected_tile_id"
             @onSelectTile="selected_tile_id = tile_id"
             @onPositionTile="onPositionTile(tile_id, $event)"
+            @onSelectAsset="onSelectTileAsset(tile_id, $event)"
           />
         </div>
         <div class='add-tile-panel'>
@@ -1016,6 +1023,7 @@
                 :is_selected="tile_id == selected_tile_id"
                 @onSelectTile="selected_tile_id = tile_id"
                 @onPositionTile="onPositionTile(tile_id, $event)"
+                @onSelectTileAsset="onSelectTileAsset(tile_id, $event)"
                 @onTileDelete="onDeleteTile(tile_id)"
               />
             </draggable>
@@ -1098,7 +1106,7 @@
               <img :src="thumb_url" width=20 height=20>
               Countdown Display
             </span>
-            <span v-else>
+            <span v-else @click.stop='onChooseAsset(tile.type)'>
               <img :src="thumb_url" width=20 height=20>
               {{asset_info.filename.substring(0, 45)}}
             </span>
