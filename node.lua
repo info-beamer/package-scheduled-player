@@ -4,6 +4,8 @@ node.alias "*" -- catch all communication
 
 util.no_globals()
 
+math.randomseed(os.time())
+
 local json = require "json"
 local loader = require "loader"
 local helper = require "helper"
