@@ -8,5 +8,9 @@
     "platforms": ["pi/epoch-1", "pi-4"],
     "runtime": {
         "outside_sources": true
+    },
+    "nesting": {
+        "parents": ["top-level"],
+        "childs": ["scheduled-plugin"]
     }
 }
