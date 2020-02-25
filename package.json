@@ -9,6 +9,10 @@
     "runtime": {
         "outside_sources": true
     },
+    "offline": {
+        "support": "maybe",
+        "info": "Playlists with time/date based scheduling require a correct system time"
+    },
     "nesting": {
         "parents": ["top-level"],
         "childs": ["scheduled-plugin"]
