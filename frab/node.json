@@ -33,11 +33,11 @@
         "options": [
             ["UTC", "UTC"],
             ["Europe/Berlin", "Europa / Berlin"],
-            ["US/Central", "US/Central"],
-            ["US/Eastern", "US/Eastern"],
-            ["US/Michigan", "US/Michigan"],
-            ["US/Mountain", "US/Mountain"],
-            ["US/Pacific", "US/Pacific"]
+            ["US/Central", "US / Central"],
+            ["US/Eastern", "US / Eastern"],
+            ["US/Michigan", "US / Michigan"],
+            ["US/Mountain", "US / Mountain"],
+            ["US/Pacific", "US / Pacific"]
         ],
         "default": "UTC"
     }, {
