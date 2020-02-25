@@ -107,12 +107,16 @@ event remotely.
 
 ![Adding a remote trigger](doc-remote-trigger2.png)
 
-## Beta Release
+# Offline
 
-This package is not ready for production usage yet. Things might still change and as
-a result setups based on this package might require additional work later. But we're
-happy that you want to try out this package and see what the future of info-beamer
-hosted will offer. Feedback is always welcome: https://info-beamer.com/contact
+This package can work offline, but only if some features are not used:
+
+ * Playlists that use a date/time in their schedule will not work unless
+ the the device got a correct system time using NTP. Alternatively it
+ is possible to use a hardware based RTC to store time across reboots.
+ See [here](https://info-beamer.com/doc/device-configuration#pcf8523rtc).
+ * Anything using remote content will not work. This includes the browser,
+ frab and streaming abilities.
 
 ## Changelog
 
