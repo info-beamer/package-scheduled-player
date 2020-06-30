@@ -1505,9 +1505,15 @@ Vue.component('tile-detail', {
       }[tile_type]
       if (!filter)
         return
+      const features = {
+        video: ['h264'],
+        rawvideo: ['h264', 'hevc'],
+        image: ['image2k', 'image4k'],
+      }[tile_type]
       let selected = await ib.assetChooser({
         filter: filter,
         selected_asset_spec: this.asset_spec,
+        features: features,
       })
       if (!selected)
         return
@@ -2165,12 +2171,13 @@ function install_native_asset_chooser() {
   delete Vue.options.components['asset-browser'];
   Vue.component('asset-browser', {
     template: '#asset-browser-native',
-    props: ["valid", "title", "help"],
+    props: ["valid", "title", "help", "features"],
     methods: {
       onOpen() {
         var that = this;
         ib.assetChooser({
-          filter: this.valid.split(',')
+          filter: this.valid.split(','),
+          features: this.features || ['image', 'h264'],
         }).then(function(selected) {
           selected && that.$emit('assetSelected', selected.id);
         })

@@ -135,6 +135,7 @@
                 "name": "asset",
                 "type": "resource",
                 "valid": ["image", "video", "font", "child"],
+                "features": ["hevc", "image4k"],
                 "default": "empty.png"
             }, {
                 "title": "Config",
@@ -267,6 +268,7 @@
                     "name": "asset",
                     "type": "resource",
                     "valid": ["image", "video", "font", "child"],
+                    "features": ["hevc", "image4k"],
                     "default": "empty.png"
                 }, {
                     "title": "Config",

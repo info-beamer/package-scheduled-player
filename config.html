@@ -980,29 +980,32 @@
         </div>
         <div class='add-tile-panel'>
           <asset-browser
-            valid="image"
             title="Image"
+            valid="image"
+            :features="['image2k', 'image4k']"
             @assetSelected="onAddTile('image', $event)">
           </asset-browser>
           <asset-browser
-            valid="video"
             title="Video"
+            valid="video"
+            :features="['h264']"
             @assetSelected="onAddTile('video', $event)">
           </asset-browser>
           <asset-browser
-            valid="video"
             title="HD Video"
+            valid="video"
+            :features="['h264', 'hevc']"
             @assetSelected="onAddTile('rawvideo', $event)">
           </asset-browser>
           <button class='btn btn-default' @click="onAddTile('stream', 'stream.png')">Stream</button>
           <asset-browser
-            valid="font"
             title="Text"
+            valid="font"
             @assetSelected="onAddTile('markup', $event)">
           </asset-browser>
           <asset-browser
-            valid="child"
             title="Plugin"
+            valid="child"
             @assetSelected="onAddTile('child', $event)">
           </asset-browser>
           <button class='btn btn-default' @click="onAddTile('flat', 'flat.png')">Flat</button>
