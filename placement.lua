@@ -80,7 +80,16 @@ local Screen = function(target, surface)
         y1 = y1 or 0
         x2 = x2 or WIDTH
         y2 = y2 or HEIGHT
-        scissors.set(project(x1, y1, x2, y2))
+        x1, y1, x2, y2 = project(x1, y1, x2, y2)
+        if x1 == 0 and y1 == 0 and x2 == NATIVE_WIDTH and y2 == NATIVE_HEIGHT and NATIVE_WIDTH ~= WIDTH and NATIVE_HEIGHT ~= HEIGHT then
+            -- workaround in case native sizes don't match virtual sizes
+            -- info-beamer wrongly disables scissors by matching to the
+            -- virtual sizes. So use those here. This can be fixed in the
+            -- future by an explicit 'scissor disable' function.
+            scissors.set(0, 0, WIDTH, HEIGHT)
+        else
+            scissors.set(x1, y1, x2, y2)
+        end
     end
 
     local function place(raw, layer, alpha, x1, y1, x2, y2)
