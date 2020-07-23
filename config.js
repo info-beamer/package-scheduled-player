@@ -2177,7 +2177,7 @@ function install_native_asset_chooser() {
         var that = this;
         ib.assetChooser({
           filter: this.valid.split(','),
-          features: this.features || ['image', 'h264'],
+          features: this.features || ['image2k', 'h264'],
         }).then(function(selected) {
           selected && that.$emit('assetSelected', selected.id);
         })
