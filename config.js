@@ -202,6 +202,9 @@ const store = new Vuex.Store({
     schedule_set_mode(state, {schedule_id, mode}) {
       Vue.set(state.config.schedules[schedule_id].scheduling, 'mode', mode);
     },
+    schedule_set_interval(state, {schedule_id, interval}) {
+      Vue.set(state.config.schedules[schedule_id].scheduling, 'interval', interval);
+    },
     schedule_set_span(state, {schedule_id, span_id, span}) {
       Vue.set(state.config.schedules[schedule_id].scheduling.spans, span_id, span);
     },
@@ -679,6 +682,12 @@ Vue.component('schedule-panel', {
         schedule_id: this.schedule_id,
         hour: hour,
         on: on,
+      });
+    },
+    onScheduleIntervalUpdate(interval) {
+      this.$store.commit('schedule_set_interval', {
+        schedule_id: this.schedule_id,
+        interval: interval,
       });
     },
     onScheduleSpanAdd() {
@@ -1726,6 +1735,7 @@ Vue.component('time-editor', {
       ["never", "Never schedule"],
       ["hour", "Hour based"],
       ["span", "Exact time spans"],
+      ["interval", "Time interval"],
       ["fallback", "Use as fallback"],
     ],
   }),
@@ -1773,6 +1783,9 @@ Vue.component('time-editor', {
     },
     onHourChange(hour, on) {
       this.$emit('onHourChange', hour, on);
+    },
+    onIntervalUpdate(interval) {
+      this.$emit('onIntervalUpdate', interval);
     },
     onSpanAdd() {
       this.$emit('onSpanAdd');
@@ -1893,6 +1906,80 @@ Vue.component('hour-editor', {
       }
     },
   }
+})
+
+Vue.component('timeinterval-editor', {
+  template: '#timeinterval-editor',
+  props: ['scheduling'],
+  created() {
+    if (!this.scheduling.starts) {
+      this.$emit('onSetDateStart', (new Date()).toISOString().substr(0, 10));
+    }
+  },
+  computed: {
+    interval() {
+      return this.scheduling.interval || {}
+    },
+    has_end_date() {
+      return !!this.scheduling.ends;
+    },
+    date_starts: {
+      get() {
+        return this.scheduling.starts;
+      },
+      set(v) {
+        if (v) {
+          this.$emit('onSetDateStart', v);
+        }
+      },
+    },
+    date_ends: {
+      get() {
+        return this.scheduling.ends;
+      },
+      set(v) {
+        if (v) {
+          this.$emit('onSetDateEnd', v);
+        }
+      },
+    },
+    interval_starts: {
+      get() {
+        return this.interval.starts || '00:00';
+      },
+      set(v) {
+        if (v) {
+          this.$emit('onUpdate', {
+            starts: v,
+            ends: this.interval_ends,
+          })
+        }
+      },
+    },
+    interval_ends: {
+      get() {
+        return this.interval.ends || '23:59';
+      },
+      set(v) {
+        if (v) {
+          this.$emit('onUpdate', {
+            starts: this.interval_starts,
+            ends: v,
+          })
+        }
+      },
+    },
+  },
+  methods: {
+    onAddEnd() {
+      var date = new Date();
+      date.setDate(date.getDate() + 7);
+      this.$emit('onSetDateEnd', date.toISOString().substring(0, 10));
+    },
+    onDeleteEnd() {
+      this.$emit('onSetDateEnd', undefined);
+    }
+  },
 })
 
 Vue.component('timespan-editor', {

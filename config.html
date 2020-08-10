@@ -278,6 +278,14 @@
         border: 0;
         border-bottom: 3px solid lightgrey;
       }
+      .timeinterval-editor {
+        margin-top: 10px;
+      }
+      .timeinterval-editor input {
+        background-color: inherit;
+        border: 0;
+        border-bottom: 3px solid lightgrey;
+      }
       .tile-editor-num {
         max-width: 50px;
         border: none;
@@ -545,6 +553,7 @@
             @onModeChange='onScheduleMode'
             @onDateChange='onScheduleDateSet'
             @onHourChange='onScheduleHourSet'
+            @onIntervalUpdate='onScheduleIntervalUpdate'
             @onSpanAdd='onScheduleSpanAdd'
             @onSpanDelete='onScheduleSpanDelete'
             @onSpanUpdate='onScheduleSpanUpdate'
@@ -831,17 +840,18 @@
             </select-dropdown>
             <template v-if="mode == 'hour' || mode == 'span'">
               between
-                <date-select
-                  unset="now"
-                  :date="scheduling.starts"
-                  @onSetDate="onSetStarts"/>
+              <date-select
+                unset="now"
+                :date="scheduling.starts"
+                @onSetDate="onSetStarts"
+              />
               and
-                <date-select
-                  unset="the end of time"
-                  :date="scheduling.ends"
-                  @onSetDate="onSetEnds"/>
+              <date-select
+                unset="the end of time"
+                :date="scheduling.ends"
+                @onSetDate="onSetEnds"
+              />
             </template>
-
             <!--
               <select-dropdown
                 :selected="null"
@@ -864,11 +874,18 @@
             @onHourChange="onHourChange"
           />
           <timespan-editor
-            v-if="mode == 'span'"
+            v-else-if="mode == 'span'"
             :scheduling="scheduling"
             @onAdd="onSpanAdd"
             @onDelete="onSpanDelete"
             @onUpdate="onSpanUpdate"
+          />
+          <timeinterval-editor
+            v-else-if="mode == 'interval'"
+            :scheduling="scheduling"
+            @onUpdate="onIntervalUpdate"
+            @onSetDateStart="onSetStarts"
+            @onSetDateEnd="onSetEnds"
           />
         </div>
       </div>
@@ -899,6 +916,46 @@
             <button class="btn btn-default btn-sm" @click="onPreset('night')">-Night</button>
             <button class="btn btn-default btn-sm" @click="onPreset('invert')">Invert</button>
           </div>
+      </div>
+    </script>
+
+    <script type="text/x-template" id="timeinterval-editor">
+      <div class='timeinterval-editor row'>
+        <div class='col-xs-2'>
+          Schedule from
+        </div>
+        <div class='col-xs-10'>
+          <input required
+            type='date'
+            v-model.lazy='date_starts'
+          />
+          <input required
+            type='time'
+            v-model.lazy='interval_starts'
+          />
+        </div>
+        <div class='col-xs-2'>
+          Schedule until
+        </div>
+        <div class='col-xs-10'>
+          <template v-if='has_end_date'>
+            <input required
+              type='date'
+              v-model.lazy='date_ends'
+            />
+            <input required
+              type='time'
+              v-model.lazy='interval_ends'
+            />
+            <span @click="onDeleteEnd" class='glyphicon glyphicon-remove-sign'></span>
+          </template>
+          <template v-else>
+            <em>
+              End of time.
+            </em>
+            <a href='#' @click.prevent='onAddEnd'>Specify end date and time</a>.
+          </template>
+        </div>
       </div>
     </script>
 
@@ -953,7 +1010,7 @@
           </tbody>
         </table>
         <div v-else class="alert alert-info">
-          No time spans configured. Content is active in the interval given above.
+          No time spans configured. Playlist is active in the interval given above.
           Click on <em>Add time span</em> to specify exact time spans during
           that interval.
         </div>

@@ -1696,6 +1696,9 @@ local function PageSource()
                     log("schedule", "no current time. can't schedule span scheduled playlist")
                     return false
                 end
+            elseif mode == "interval" then
+                log("schedule", "no current time. can't schedule playlist with time interval")
+                return false
             end
             log("schedule", "scheduling although we don't have a correct time as schedule is always active")
             return true
@@ -1741,6 +1744,26 @@ local function PageSource()
                 end
             end
             return false
+        elseif mode == "interval" then
+            local interval = scheduling.interval or {}
+            local interval_starts = interval.starts or "00:00"
+            local interval_ends = interval.ends or "23:59"
+            local since_midnight = schedule_clock.since_midnight()
+
+            if date_within(starts, starts, today) and
+               since_midnight < minutes_since_midnight(parse_hour(interval_starts)) * 60
+            then
+                return false
+            end
+
+            if date_within(ends, ends, today) and
+               since_midnight > minutes_since_midnight(parse_hour(interval_ends)) * 60 + 59
+            then
+                return false
+            end
+
+            log("schedule", "interval matches")
+            return true
         end
     end
 
