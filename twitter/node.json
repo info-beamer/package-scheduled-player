@@ -113,7 +113,7 @@
         ],
         "default": 10
     }, {
-        "title": "Logo",
+        "title": "Add Twitter logo",
         "ui_width": 3,
         "name": "show_logo",
         "type": "boolean",
