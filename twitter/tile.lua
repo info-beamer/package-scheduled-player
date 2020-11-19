@@ -238,7 +238,7 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
         local x1, x2, y1, y2
 
         if text_over_under == "under" then
-            x1, y1, x2, y2 = util.scale_into(boundingbox_width, boundingbox_height-text_height-10, width, height)
+            x1, y1, x2, y2 = util.scale_into(boundingbox_width, boundingbox_height-text_height-margin, width, height)
         else
             x1, y1, x2, y2 = util.scale_into(boundingbox_width, boundingbox_height, width, height)
         end
