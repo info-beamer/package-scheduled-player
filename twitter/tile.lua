@@ -246,15 +246,15 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
         a.add(anims.moving_image_raw(S,E, obj,
             x1, y1, x2, y2, 1
         ))
-        mk_content_box(10, boundingbox_height - text_height)
-        mk_profile_box(10, 10)
+        mk_content_box(0, boundingbox_height - text_height)
+        mk_profile_box(0, 10)
     else
         local text_y = math.min(
             300,
             boundingbox_height-text_height
         )
-        mk_content_box(10, text_y)
-        mk_profile_box(10, 10)
+        mk_content_box(0, text_y)
+        mk_profile_box(0, 0)
     end
 
     if show_logo then
