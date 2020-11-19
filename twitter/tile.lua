@@ -13,6 +13,7 @@ local font
 local font_size
 local margin = 10
 local text_over_under
+local profile_over_under
 local logo = resource.load_image{
     file = api.localized "twitter-logo.png"
 }
@@ -113,6 +114,7 @@ function M.updated_config_json(config)
     font_size = config.font_size
     margin = config.margin
     text_over_under = config.text_over_under
+    profile_over_under = config.profile_over_under
 
     if config.shading > 0.0 then
         shading = resource.create_colored_texture(0,0,0,config.shading)
@@ -229,25 +231,46 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
 
     local obj = video or image
     local text_height = #lines*font_size + 2*margin
+    local profile_height = font_size*1.6 + 2*margin
 
     print(boundingbox_width, boundingbox_height, text_height, text_over_under)
 
     if obj then
         local width, height = obj:size()
         print("ASSET SIZE", width, height, obj)
-        local x1, x2, y1, y2
+        local remaining_height_for_image = boundingbox_height
+        local profile_y
 
         if text_over_under == "under" then
-            x1, y1, x2, y2 = util.scale_into(boundingbox_width, boundingbox_height-text_height-margin, width, height)
-        else
-            x1, y1, x2, y2 = util.scale_into(boundingbox_width, boundingbox_height, width, height)
+            remaining_height_for_image = remaining_height_for_image - text_height - margin
         end
+
+        if profile_over_under == "under" or profile_over_under == "over" then
+            remaining_height_for_image = remaining_height_for_image - profile_height - margin
+        end
+
+        local x1, y1, x2, y2 = util.scale_into(boundingbox_width, remaining_height_for_image, width, height)
+
+        if profile_over_under == "over" then
+            y1 = y1 + profile_height + margin
+            y2 = y2 + profile_height + margin
+        end
+
         print(x1, y1, x2, y2)
         a.add(anims.moving_image_raw(S,E, obj,
             x1, y1, x2, y2, 1
         ))
         mk_content_box(0, boundingbox_height - text_height)
-        mk_profile_box(0, 10)
+
+        if profile_over_under == "under" then
+            profile_y = boundingbox_height - text_height - profile_height - margin
+        elseif profile_over_under == "over" then
+            profile_y = 0
+        else
+            profile_y = 10
+        end
+
+        mk_profile_box(0, profile_y)
     else
         local text_y = math.min(
             math.max(

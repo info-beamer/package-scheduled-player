@@ -99,6 +99,27 @@
         ],
         "default": 70
     }, {
+        "title": "Profile Info",
+        "ui_width": 3,
+        "name": "profile_over_under",
+        "type": "select",
+        "options": [
+            ["over", "Over Image"],
+            ["ontop", "On Top of Image"],
+            ["under", "Under Image"]
+        ],
+        "default": "over"
+    }, {
+        "title": "Tweet Text",
+        "ui_width": 3,
+        "name": "text_over_under",
+        "type": "select",
+        "options": [
+            ["over", "Overlay Image"],
+            ["under", "Under Image"]
+        ],
+        "default": "over"
+    }, {
         "title": "Shading",
         "ui_width": 3,
         "name": "shading",
@@ -113,16 +134,6 @@
             [1.0, "Solid"]
         ],
         "default": 0.0
-    }, {
-        "title": "Tweet Text",
-        "ui_width": 3,
-        "name": "text_over_under",
-        "type": "select",
-        "options": [
-            ["over", "Overlay Image"],
-            ["under", "Under Image"]
-        ],
-        "default": "over"
     }, {
         "title": "Margin",
         "ui_width": 3,
