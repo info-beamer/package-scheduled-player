@@ -75,7 +75,7 @@ function M.updated_tweets_json(tweets)
                 video = nil
             end
         end
-            
+
         if profile then
             playlist[#playlist+1] = {
                 screen_name = tweet.screen_name,
