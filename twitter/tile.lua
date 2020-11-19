@@ -10,6 +10,7 @@ local include_in_scroller = true
 local shading
 local tweet_color, profile_color
 local font
+local font_size
 local margin = 10
 local logo = resource.load_image{
     file = api.localized "twitter-logo.png"
@@ -108,6 +109,7 @@ function M.updated_config_json(config)
     font = resource.load_font(api.localized(config.font.asset_name))
     tweet_color = config.tweet_color
     profile_color = config.profile_color
+    font_size = config.font_size
     margin = config.margin
 
     if config.shading > 0.0 then
@@ -176,30 +178,31 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
         local name = tweet.name
         local info = "@"..tweet.screen_name..", "..age.." ago"
 
+        local profile_image_size = font_size*1.6
+
         if shading then
             local profile_width = math.max(
-                font:width(name, 70),
-                font:width(info, 40)
+                font:width(name, font_size),
+                font:width(info, font_size*0.6)
             )
             a.add(anims.moving_image_raw(S,E, shading,
-                x, y, x+140+profile_width+2*margin, y+80+40+2*margin, 1
+                x, y, x+profile_image_size+profile_width+2*margin+10, y+profile_image_size+2*margin+5, 1
             ))
         end
-        a.add(anims.moving_font(S, E, font, x+140+margin, y+margin, name, 70,
+        a.add(anims.moving_font(S, E, font, x+profile_image_size+10+margin, y+margin, name, font_size,
             profile_color.r, profile_color.g, profile_color.b, profile_color.a
         ))
-        a.add(anims.moving_font(S, E, font, x+140+margin, y+75+margin, info, 40,
+        a.add(anims.moving_font(S, E, font, x+profile_image_size+10+margin, y+font_size+5+margin, info, font_size*0.6,
             profile_color.r, profile_color.g, profile_color.b, profile_color.a*0.8
         )); S=S+0.1;
         -- a.add(anims.tweet_profile(S, E, x+margin, y+margin, profile, 120))
         a.add(anims.moving_image_raw(S,E, profile,
-            x+margin, y+margin, x+margin+120, y+margin+120, 1
+            x+margin, y+margin, x+margin+profile_image_size+5, y+margin+profile_image_size+5, 1
         ))
     end
 
-    local tweet_size = 80
     local lines = wrap(
-        tweet.text, font, tweet_size, x2-x1-2*margin
+        tweet.text, font, font_size, boundingbox_width-2*margin
     )
 
     local function mk_content_box(x, y)
@@ -207,18 +210,18 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
             local text_width = 0
             for idx = 1, #lines do
                 local line = lines[idx]
-                text_width = math.max(text_width, font:width(line, tweet_size))
+                text_width = math.max(text_width, font:width(line, font_size))
             end
             a.add(anims.moving_image_raw(S,E, shading,
-                x, y, x+text_width+2*margin, y+#lines*tweet_size+2*margin, 1
+                x, y, x+text_width+2*margin, y+#lines*font_size+2*margin, 1
             ))
         end
         y = y + margin
         for idx = 1, #lines do
             local line = lines[idx]
-            a.add(anims.moving_font(S, E, font, x+margin, y, line, tweet_size,
+            a.add(anims.moving_font(S, E, font, x+margin, y, line, font_size,
                 tweet_color.r, tweet_color.g, tweet_color.b, tweet_color.a
-            )); S=S+0.1; y=y+tweet_size
+            )); S=S+0.1; y=y+font_size
         end
     end
 

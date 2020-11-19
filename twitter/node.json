@@ -85,6 +85,20 @@
         "doc_link": true,
         "default": "default-font.ttf"
     }, {
+        "title": "Font Size",
+        "ui_width": 3,
+        "name": "font_size",
+        "type": "select",
+        "options": [
+            [40, "40px"],
+            [50, "50px"],
+            [60, "60px"],
+            [70, "70px"],
+            [80, "80px"],
+            [90, "90px"]
+        ],
+        "default": 70
+    }, {
         "title": "Shading",
         "ui_width": 3,
         "name": "shading",
