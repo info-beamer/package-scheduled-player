@@ -104,9 +104,9 @@
         "name": "profile_over_under",
         "type": "select",
         "options": [
-            ["over", "Over Image"],
-            ["ontop", "On Top of Image"],
-            ["under", "Under Image"]
+            ["over", "Above Image"],
+            ["ontop", "Overlay Image"],
+            ["under", "Below Image"]
         ],
         "default": "over"
     }, {
@@ -116,7 +116,7 @@
         "type": "select",
         "options": [
             ["over", "Overlay Image"],
-            ["under", "Under Image"]
+            ["under", "Below Image"]
         ],
         "default": "over"
     }, {
