@@ -250,7 +250,10 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
         mk_profile_box(0, 10)
     else
         local text_y = math.min(
-            300,
+            math.max(
+                font_size*1.6+3*margin,
+                130
+            ),
             boundingbox_height-text_height
         )
         mk_content_box(0, text_y)
