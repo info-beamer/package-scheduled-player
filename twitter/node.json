@@ -114,6 +114,16 @@
         ],
         "default": 0.0
     }, {
+        "title": "Tweet Text",
+        "ui_width": 3,
+        "name": "text_over_under",
+        "type": "select",
+        "options": [
+            ["over", "Overlay Image"],
+            ["under", "Under Image"]
+        ],
+        "default": "over"
+    }, {
         "title": "Margin",
         "ui_width": 3,
         "name": "margin",

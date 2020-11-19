@@ -12,6 +12,7 @@ local tweet_color, profile_color
 local font
 local font_size
 local margin = 10
+local text_over_under
 local logo = resource.load_image{
     file = api.localized "twitter-logo.png"
 }
@@ -111,6 +112,7 @@ function M.updated_config_json(config)
     profile_color = config.profile_color
     font_size = config.font_size
     margin = config.margin
+    text_over_under = config.text_over_under
 
     if config.shading > 0.0 then
         shading = resource.create_colored_texture(0,0,0,config.shading)
@@ -226,19 +228,32 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
     end
 
     local obj = video or image
+    local text_height = #lines*font_size + 2*margin
+
+    print(boundingbox_width, boundingbox_height, text_height, text_over_under)
 
     if obj then
         local width, height = obj:size()
         print("ASSET SIZE", width, height, obj)
-        local x1, y1, x2, y2 = util.scale_into(1920, 1080, width, height)
+        local x1, x2, y1, y2
+
+        if text_over_under == "under" then
+            x1, y1, x2, y2 = util.scale_into(boundingbox_width, boundingbox_height-text_height-10, width, height)
+        else
+            x1, y1, x2, y2 = util.scale_into(boundingbox_width, boundingbox_height, width, height)
+        end
         print(x1, y1, x2, y2)
         a.add(anims.moving_image_raw(S,E, obj,
             x1, y1, x2, y2, 1
         ))
-        mk_content_box(10, 1080 - #lines * tweet_size - 10 - 2*margin)
+        mk_content_box(10, boundingbox_height - text_height)
         mk_profile_box(10, 10)
     else
-        mk_content_box(10, 300)
+        local text_y = math.min(
+            300,
+            boundingbox_height-text_height
+        )
+        mk_content_box(10, text_y)
         mk_profile_box(10, 10)
     end
 
