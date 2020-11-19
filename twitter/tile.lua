@@ -124,6 +124,11 @@ local tweet_gen = util.generator(function()
 end)
 
 function M.task(starts, ends, config, x1, y1, x2, y2)
+    local boundingbox_height = y2-y1
+    local boundingbox_width = x2-x1
+
+    print("ACTUAL SCREEN SIZE " .. boundingbox_width .. "x" .. boundingbox_height)
+
     local tweet = tweet_gen.next()
 
     local profile = resource.load_image{
@@ -162,7 +167,7 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
         age = string.format("%dd", age/86400)
     end
 
-    local a = anims.Area(1920, 1080)
+    local a = anims.Area(boundingbox_width, boundingbox_height)
 
     local S = starts
     local E = ends
@@ -235,7 +240,7 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
     end
 
     if show_logo then
-        a.add(anims.logo(S, E, 1920-130, 1080-130, logo, 100))
+        a.add(anims.logo(S, E, boundingbox_width-130, boundingbox_height-130, logo, 100))
     end
 
     for now in api.frame_between(starts, ends) do
