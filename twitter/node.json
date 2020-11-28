@@ -99,26 +99,17 @@
         ],
         "default": 70
     }, {
-        "title": "Profile Info",
+        "title": "Profile Color",
         "ui_width": 3,
-        "name": "profile_over_under",
-        "type": "select",
-        "options": [
-            ["over", "Above Image"],
-            ["ontop", "Overlay Image"],
-            ["under", "Below Image"]
-        ],
-        "default": "over"
+        "name": "profile_color",
+        "type": "color",
+        "default": [1,1,1,1]
     }, {
-        "title": "Tweet Text",
+        "title": "Tweet Color",
         "ui_width": 3,
-        "name": "text_over_under",
-        "type": "select",
-        "options": [
-            ["over", "Overlay Image"],
-            ["under", "Below Image"]
-        ],
-        "default": "over"
+        "name": "tweet_color",
+        "type": "color",
+        "default": [1,1,1,1]
     }, {
         "title": "Shading",
         "ui_width": 3,
@@ -148,24 +139,34 @@
         ],
         "default": 10
     }, {
-        "title": "Add Twitter logo",
+        "title": "Profile Info",
+        "ui_width": 3,
+        "name": "profile_over_under",
+        "type": "select",
+        "options": [
+            ["over", "Above Image"],
+            ["ontop", "Overlay Image"],
+            ["under", "Below Image"]
+        ],
+        "default": "over"
+    }, {
+        "title": "Tweet Text",
+        "ui_width": 3,
+        "name": "text_over_under",
+        "type": "select",
+        "options": [
+            ["over", "Overlay Image"],
+            ["under", "Below Image"]
+        ],
+        "default": "over"
+    }, {
+        "title": "Branding",
         "ui_width": 3,
         "name": "show_logo",
         "type": "boolean",
+        "info": "Add Twitter logo",
         "default": true
-    }, {
-        "title": "Profile Color",
-        "ui_width": 3,
-        "name": "profile_color",
-        "type": "color",
-        "default": [1,1,1,1]
-    }, {
-        "title": "Tweet Color",
-        "ui_width": 3,
-        "name": "tweet_color",
-        "type": "color",
-        "default": [1,1,1,1]
-    },
+    }, 
     {
         "title": "Authentication",
         "type": "section"
