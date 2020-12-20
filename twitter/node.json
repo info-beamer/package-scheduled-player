@@ -4,7 +4,7 @@
         "network": "Needs to access twitter API"
     },
     "deferred": [
-        "content.lua"
+        "tile.lua"
     ],
     "options": [{
         "title": "Twitter",
@@ -194,8 +194,5 @@
         "name": "access_token_secret",
         "type": "string",
         "default": ""
-    }],
-    "deferred": [
-        "tile.lua"
-    ]
+    }]
 }

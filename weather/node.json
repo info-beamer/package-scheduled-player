@@ -4,6 +4,9 @@
         "network": "needs API access"
     },
     "custom_ui": "config.html",
+    "deferred": [
+        "tile.lua"
+    ],
     "options": [{
         "title": "Location Lat",
         "ui_width": 2,
@@ -33,8 +36,5 @@
         "name": "font",
         "type": "font",
         "default": "default-font.ttf"
-    }],
-    "deferred": [
-        "tile.lua"
-    ]
+    }]
 }
