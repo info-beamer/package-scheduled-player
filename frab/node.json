@@ -48,6 +48,7 @@
         "default": "26.12.2017"
     }, {
         "title": "Show Language Tags",
+        "ui_width": 4,
         "name": "show_language_tags",
         "type": "boolean",
         "itemname": "show_language_tags",
