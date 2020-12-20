@@ -1,0 +1,170 @@
+#!/usr/bin/python
+
+import re
+import time
+import json
+import urllib3
+import requests
+import pytz
+import traceback
+import time
+from os.path import isfile, join
+from os import remove, walk, environ
+from datetime import datetime, timedelta
+from urlparse import urlparse
+
+from hosted import config
+
+session = requests.Session()
+headers = {
+    'User-Agent': 'info-beamer mastodon poller serial {}'.format(environ.get('SERIAL', 'unknown')),
+    'Accept': 'application/json'
+}
+
+def download_tag_timeline(baseurl, tag, limit):
+    url = "{baseurl}/api/v1/timelines/tag/{tag}?limit={limit}".format(baseurl=baseurl, tag=tag, limit=limit)
+    return session.get(url, headers=headers).json()
+
+
+def remove_html_markup(string):
+    # I know, this could be done using HTMLParser - but this opens a can
+    # of worms because we're dealing with python2.7 and unicode.
+    for source, replacement in {
+            '&nbsp;': ' ',
+            '&amp;': '&',
+            '&gt;': '>',
+            '&lt;': '<',
+            '&quot;': '"',
+            '&apos;': '\'',
+            '<br>': ' ',
+            '<br />': ' ',
+            '</p><p>': ' ',
+            }.items():
+        string = string.replace(source, replacement)
+
+    string = re.sub('<[^>]+>', '', string)
+
+    return string
+
+def add_instance_to_accountname(string):
+    o = urlparse(config.baseurl)
+    if '@' not in string:
+        string = '{}@{}'.format(string, o.netloc)
+
+    return string
+
+def parse_tag_timeline(tag_timeline):
+    tootlist = []
+    for toot in tag_timeline:
+        #filter garbage
+        if '@twitter.com' in toot['content'] or 'nitter.net/' in toot['content']:
+            continue
+        # get timestamp
+        date_time_obj = datetime.strptime(toot['created_at'][0:-1], '%Y-%m-%dT%H:%M:%S.%f')
+        created_at = int(time.mktime(date_time_obj.timetuple()))
+        # get and sanitize content
+        # compile all of it to new data structure
+        data = {
+              'id': toot['id'], #123456567645
+              'created_at': created_at, #"2020-12-19T13:04:57.000Z",
+              'favourites_count': toot['favourites_count'], #0
+              'content': remove_html_markup(toot['content']), #"This is some toot text without html"
+              'account': {
+                'id': toot['account']['id'],
+                'acct': toot['account']['acct'],
+                'display_name': toot['account']['display_name'], 
+                'avatar_static': cache_image(toot['account']['avatar_static']),
+              },
+              'media_attachment': ''
+              # media stuff gets filled later
+              #'media_attachments': []
+              #  {
+              #    'id': "105406994689832464",
+              #    'type': "image",
+              #    'url': "https://chaos.social/system/cache/media_attachments/files/105/406/994/689/832/464/original/7ac197f66d2cb159.jpg?1608383097"
+              #  }
+            }
+
+        data['account']['acct'] = add_instance_to_accountname(data['account']['acct'])
+        # see if media content exists 
+            # get first image attachment
+        if toot.get('media_attachments', None):
+            for attachment in toot['media_attachments']:
+                if attachment['type'] == "image":
+                    data['media_attachment'] = cache_image(attachment['url'])
+                    break
+        
+        # append everythin to list
+        tootlist.append(data)
+
+        #rinse and repeat for all toots
+
+    # output list
+    return tootlist
+
+def extract_image_name(url):
+    o = urlparse(url)
+    return o.path.split('/')[-1]
+
+def cache_image(url):
+    cache_name = extract_image_name(url)
+    if not isfile(cache_name):
+        with open(cache_name, 'wb') as i:
+            image = session.get(url)
+            i.write(image.content)
+    return cache_name
+
+def write_json(tootlist):
+    if len(tootlist) > 0:
+        with file("tootlist.json", "wb") as f:
+            f.write(json.dumps(tootlist, ensure_ascii=False).encode("utf8"))
+
+def cleanup(tootlist):
+    # create list of all currently needed images
+    cachelist = [
+            'mastodon-logo.png',
+            'node.png',
+            'package.png',
+    ]
+    for toot in tootlist:
+        cachelist.append(toot['account']['avatar_static'])
+        if toot.get('media_attachment', None):
+            cachelist.append(toot['media_attachment'])
+    #print('currently needed images')
+    #print(sorted(cachelist))
+    # get all images in current directory
+    imagelist = []
+    for root, dirs, files in walk('./'):
+        for name in files:
+            if name.endswith('png') or name.endswith('jpg') or name.endswith('jpeg') or name.endswith('gif'):
+                imagelist.append(join(name))
+    #print("currently stored images")
+    #print(sorted(imagelist))
+    # delete all files which aren't in the currently needed list
+    for f in imagelist:
+        if f not in cachelist:
+            print("delete " + f)
+            remove(f)
+
+def main():
+    config.restart_on_update()
+
+    if config.poll_interval == 0:
+        print >>sys.stderr, "waiting for a config change"
+        while 1: time.sleep(100000)
+
+    while 1:
+        try:
+            tag_timeline = download_tag_timeline(config.baseurl, config.tag, config.count)
+            tootlist = parse_tag_timeline(tag_timeline)
+            write_json(tootlist)
+            print("got some toots, get next ones in a few minutes, doing cleanup now")
+            cleanup(tootlist)
+        except:
+            traceback.print_exc()
+            time.sleep(60)
+        else:
+            time.sleep(60 * config.poll_interval)
+
+if __name__ == "__main__":
+    main()

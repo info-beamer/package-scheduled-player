@@ -1,0 +1,16 @@
+TTMobile_de
+TTMobile_at
+TTMobile_ch
+TopHashtags
+trendinaliaNL
+trendinaliaDE
+trendinaliaUK
+trendinaliaCH
+trendinaliaSE
+trendinaliaIT
+trendinaliaAT
+trendinaliaGB
+DenmarkTrending
+TrendingGermany
+DeTopTweet
+GeoHashTrend

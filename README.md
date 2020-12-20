@@ -123,6 +123,10 @@ This package can work offline, but only if some features are not used:
 Got feedback? Don't hesitate to get on contact with info-beamer support here:
 https://info-beamer.com/contact
 
+### Version beta19
+
+ * Add Mastodon Tag Timeline module, similar to the existing Twitter module
+
 ### Version 18
 
  * Added "Copy" button to copy a page.

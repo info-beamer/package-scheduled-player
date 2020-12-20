@@ -1,0 +1,5 @@
+{
+    "name": "MAstodon Tag Timeline Display Module",
+    "author": "sophie@selfnet and fw@dividuum.de",
+    "desc": "Shows toots from a tag timeline, based on the Twitter Module by fw@dividuum.de"
+}

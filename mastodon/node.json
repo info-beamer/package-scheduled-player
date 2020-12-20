@@ -1,0 +1,145 @@
+{
+    "name": "Plugin: Mastodon Tag Timeline",
+    "permissions": {
+        "network": "Needs to access public API of a MAstodon instance"
+    },
+    "deferred": [
+        "content.lua"
+    ],
+    "options": [{
+        "title": "Mastodon Tag Timeline",
+        "type": "section"
+    }, {
+        "title": "Mastodon Instance Base URL",
+        "ui_width": 6,
+        "name": "baseurl",
+        "type": "string",
+        "default": "https://mastodon.social"
+    }, {
+        "title": "Tag Query",
+        "ui_width": 3,
+        "name": "tag",
+        "type": "string",
+        "default": "infobeamer"
+    }, {
+        "title": "Number of toots",
+        "ui_width": 3,
+        "name": "count",
+        "type": "select",
+        "options": [
+            [10, "10 toots"],
+            [20, "20 (default)"],
+            [40, "40 toots"],
+            [80, "80 toots"]
+        ],
+        "default": 20
+    }, {
+        "title": "Poll interval",
+        "ui_width": 3,
+        "name": "poll_interval",
+        "type": "select",
+        "options": [
+            [2, "2 Minutes"],
+            [5, "5 Minutes (default)"],
+            [10, "10 Minutes"]
+        ],
+        "default": 5
+    }, {
+        "title": "Broadcast to scroller",
+        "ui_width": 3,
+        "name": "include_in_scroller",
+        "hint": "Add all toots as content to the scroller",
+        "type": "boolean",
+        "default": true
+    },
+    {
+        "title": "Presentation",
+        "type": "section"
+    },
+    {
+        "title": "Font",
+        "ui_width": 3,
+        "name": "font",
+        "type": "font",
+        "doc_link": true,
+        "default": "default-font.ttf"
+    }, {
+        "title": "Font Size",
+        "ui_width": 3,
+        "name": "font_size",
+        "type": "select",
+        "options": [
+            [40, "40px"],
+            [50, "50px"],
+            [60, "60px"],
+            [70, "70px"],
+            [80, "80px"],
+            [90, "90px"]
+        ],
+        "default": 70
+    }, {
+        "title": "Profile Color",
+        "ui_width": 3,
+        "name": "profile_color",
+        "type": "color",
+        "default": [1,1,1,1]
+    }, {
+        "title": "Toot Color",
+        "ui_width": 3,
+        "name": "toot_color",
+        "type": "color",
+        "default": [1,1,1,1]
+    }, {
+        "title": "Shading",
+        "ui_width": 3,
+        "name": "shading",
+        "type": "select",
+        "options": [
+            [0.0, "No Shading"],
+            [0.1, "Barely visible"],
+            [0.3, "Light"],
+            [0.5, "Medium"],
+            [0.8, "Dark"],
+            [0.9, "Very dark"],
+            [1.0, "Solid"]
+        ],
+        "default": 0.0
+    }, {
+        "title": "Margin",
+        "ui_width": 3,
+        "name": "margin",
+        "type": "select",
+        "options": [
+            [0, "0"],
+            [10, "10"],
+            [20, "20"],
+            [30, "30"],
+            [40, "40"]
+        ],
+        "default": 10
+    }, {
+        "title": "Profile Info",
+        "ui_width": 3,
+        "name": "profile_over_under",
+        "type": "select",
+        "options": [
+            ["over", "Above Image"],
+            ["ontop", "Overlay Image"],
+            ["under", "Below Image"]
+        ],
+        "default": "over"
+    }, {
+        "title": "Toot Text",
+        "ui_width": 3,
+        "name": "text_over_under",
+        "type": "select",
+        "options": [
+            ["over", "Overlay Image"],
+            ["under", "Below Image"]
+        ],
+        "default": "over"
+    }],
+    "deferred": [
+        "tile.lua"
+    ]
+}
