@@ -86,8 +86,6 @@ function M.updated_schedule_json(new_schedule)
         else
             if talk.lang ~= "" and show_language_tags then
                 talk.title = talk.title .. " (" .. talk.lang .. ")"
-            else
-                talk.title = talk.title
             end
 
             talk.track = tracks[talk.track] or {

@@ -126,6 +126,7 @@
             "name": "info",
             "type": "text",
             "rows": 6,
+            "placeholder": "Key,Value pairs in each line",
             "default": ""
         }]
     }, {
