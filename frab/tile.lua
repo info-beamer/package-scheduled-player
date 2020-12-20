@@ -33,6 +33,7 @@ function M.updated_config_json(config)
     show_language_tags = config.show_language_tags
 
     rooms = {}
+    current_room = nil
     for idx, room in ipairs(config.rooms) do
         if room.serial == sys.get_env "SERIAL" then
             print("found my room")
@@ -546,6 +547,19 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
         day = view_day,
         clock = view_clock,
     })[config.mode or 'all_talks'](starts, ends, config, x1, y1, x2, y2)
+end
+
+function M.can_show(config)
+    local mode = config.mode
+    print("probing frab mode", mode)
+    -- these can always play
+    if mode == "day" or
+       mode == "clock" or
+       mode == "all_talks"
+    then
+        return true
+    end
+    return not not current_room
 end
 
 return M

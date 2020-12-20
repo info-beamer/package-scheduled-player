@@ -600,8 +600,8 @@ local gl_effects = {
 
 local function ChildTile(asset, config, x1, y1, x2, y2)
     return function(starts, ends)
-        local tile = tile_loader.modules[asset.asset_name]
-        return tile.task(starts, ends, config, x1, y1, x2, y2)
+        local impl = tile_loader.modules[asset.asset_name]
+        return impl.task(starts, ends, config, x1, y1, x2, y2)
     end
 end
 
@@ -1402,6 +1402,21 @@ local function Page(page)
         return duration
     end
 
+    local function can_show()
+        local can_show = true
+        for _, tile in ipairs(page.tiles) do
+            if tile.type == "child" then
+                local child_name = tile.asset.asset_name
+                local impl = tile_loader.modules[child_name]
+                if impl.can_show and not impl.can_show(tile.config) then
+                    print("probing child tile", child_name, "can_show==false")
+                    can_show = false
+                end
+            end
+        end
+        return can_show
+    end
+
     local function get_tiles()
         local tiles = {}
 
@@ -1430,6 +1445,7 @@ local function Page(page)
         get_duration = get_duration;
         get_tiles = get_tiles;
         is_fallback = page.is_fallback;
+        can_show = can_show;
     }
 end
 
@@ -1819,20 +1835,30 @@ local function PageSource()
     end
 
     local function fill_pages_from_schedule(pages, schedule)
-        if #schedule.pages == 0 then
+        local filtered_pages = {}
+        for i, page in ipairs(schedule.pages) do
+            page = Page(page)
+            if page.can_show() then
+                filtered_pages[#filtered_pages+1] = page
+            end
+        end
+
+        print("filtered pages:", #filtered_pages)
+
+        if #filtered_pages == 0 then
             return
         end
 
         local display_mode = schedule.display_mode or "all"
         if display_mode == "all" then
             log("schedule", "adding all pages")
-            for p = 1, #schedule.pages do
-                pages[#pages+1] = Page(schedule.pages[p])
+            for p = 1, #filtered_pages do
+                pages[#pages+1] = filtered_pages[p]
             end
         else -- random-1
             log("schedule", "selecting a random page")
-            local random_page = math.random(1, #schedule.pages)
-            pages[#pages+1] = Page(schedule.pages[random_page])
+            local random_page = math.random(1, #filtered_pages)
+            pages[#pages+1] = filtered_pages[random_page]
         end
     end
 
