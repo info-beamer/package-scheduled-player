@@ -47,6 +47,13 @@
         "hint": "Day 0 (DD.MM.YYYY)",
         "default": "26.12.2017"
     }, {
+        "title": "Show Language Tags",
+        "name": "show_language_tags",
+        "type": "boolean",
+        "itemname": "show_language_tags",
+        "hint": "Show Language Tag at end of talk names",
+        "default": true
+    }, {
         "title": "Fahrplan Urls",
         "name": "schedule_urls",
         "doc_link": true,
@@ -72,13 +79,6 @@
             ],
             "default": "primary"
         }]
-    }, {
-        "title": "Show Language Tags", 
-        "name": "show_language_tags",
-        "type": "boolean",
-        "itemname": "show_language_tags",
-        "hint": "Show Language Tag at end of talk names", 
-        "default": true
     }, {
         "title": "Rooms",
         "name": "rooms",
