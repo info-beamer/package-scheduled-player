@@ -149,6 +149,7 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
     if tweet.image then
         image = resource.load_image{
             file = tweet.image:copy(),
+            fastload = true,
         }
     end
 

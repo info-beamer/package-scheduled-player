@@ -228,7 +228,10 @@ local function ImageCache()
             return error_img
         end
         if not image.obj then
-            image.obj = resource.load_image(image.file)
+            image.obj = resource.load_image{
+                file = image.file,
+                fastload = true,
+            }
         end
         image.lru = max(image.lru, sys.now() + keep)
         return image.obj

@@ -27,6 +27,10 @@ util.data_mapper{
     end;
 }
 
+local function rgba(base, a)
+    return base[1], base[2], base[3], a
+end
+
 function M.updated_config_json(config)
     font = resource.load_font(api.localized(config.font.asset_name))
     info_font = resource.load_font(api.localized(config.info_font.asset_name))
@@ -66,6 +70,7 @@ function M.updated_config_json(config)
         tracks[track.name] = {
             name = track.name_short,
             background = resource.create_colored_texture(unpack(track.color.rgba)),
+            color = {track.color.r, track.color.g, track.color.b},
         }
     end
     pp(tracks)
@@ -79,12 +84,10 @@ function M.updated_schedule_json(new_schedule)
         if not rooms[talk.place] then
             table.remove(schedule, idx)
         else
-            if talk.lang ~= "" then
-                if show_language_tags then
-                    talk.title = talk.title .. " (" .. talk.lang .. ")"
-                else
-                    talk.title = talk.title
-                end
+            if talk.lang ~= "" and show_language_tags then
+                talk.title = talk.title .. " (" .. talk.lang .. ")"
+            else
+                talk.title = talk.title
             end
 
             talk.track = tracks[talk.track] or {
@@ -181,7 +184,7 @@ local function view_next_talk(starts, ends, config, x1, y1, x2, y2)
     local font_size = config.font_size or 70
     local align = config.next_align or "left"
     local abstract = config.next_abstract
-    local r,g,b = helper.parse_rgb(config.color or "#ffffff")
+    local default_color = {helper.parse_rgb(config.color or "#ffffff")}
 
     local a = anims.Area(x2 - x1, y2 - y1)
 
@@ -210,11 +213,13 @@ local function view_next_talk(starts, ends, config, x1, y1, x2, y2)
         col2 = 0
     end
 
-    if not current_talk then
-        text(col2, y, "Nope. That's it.", time_size, r,g,b,1)
+    if #schedule == 0 then
+        text(col2, y, "Fetching talks...", time_size, rgba(default_color,1))
+    elseif not current_talk then
+        text(col2, y, "Nope. That's it.", time_size, rgba(default_color,1))
     else
         -- Time
-        text(col1, y, current_talk.start_str, time_size, r,g,b,1)
+        text(col1, y, current_talk.start_str, time_size, rgba(default_color,1))
 
         -- Delta
         local delta = current_talk.start_unix - api.clock.unix()
@@ -228,12 +233,14 @@ local function view_next_talk(starts, ends, config, x1, y1, x2, y2)
         end
 
         local y_time = y+time_size
-        text(col1, y_time, talk_time, time_size, r,g,b,1)
+        text(col1, y_time, talk_time, time_size, rgba(default_color,1))
 
         -- Title
+        local y_start = y
+
         local lines = wrap(current_talk.title, font, title_size, a.width - col2)
         for idx = 1, math.min(5, #lines) do
-            text(col2, y, lines[idx], title_size, r,g,b,1)
+            text(col2, y, lines[idx], title_size, rgba(default_color,1))
             y = y + title_size
         end
         y = y + 20
@@ -242,7 +249,7 @@ local function view_next_talk(starts, ends, config, x1, y1, x2, y2)
         if abstract then
             local lines = wrap(current_talk.abstract, font, abstract_size, a.width - col2)
             for idx = 1, math.min(5, #lines) do
-                text(col2, y, lines[idx], abstract_size, r,g,b,1)
+                text(col2, y, lines[idx], abstract_size, rgba(default_color,1))
                 y = y + abstract_size
             end
             y = y + 20
@@ -250,9 +257,13 @@ local function view_next_talk(starts, ends, config, x1, y1, x2, y2)
 
         -- Speakers
         for idx = 1, #current_talk.speakers do
-            text(col2, y, current_talk.speakers[idx], speaker_size, r,g,b,.8)
+            text(col2, y, current_talk.speakers[idx], speaker_size, rgba(default_color,.8))
             y = y + speaker_size
         end
+
+        a.add(anims.moving_image_raw(
+            S, E, current_talk.track.background, col2 - 25, y_start, col2-12, y
+        ))
     end
 
     for now in api.frame_between(starts, ends) do
@@ -399,7 +410,7 @@ end
 local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
     local title_size = config.font_size or 70
     local align = config.all_align or "left"
-    local r,g,b = helper.parse_rgb(config.color or "#ffffff")
+    local default_color = {helper.parse_rgb(config.color or "#ffffff")}
 
     local a = anims.Area(x2 - x1, y2 - y1)
 
@@ -422,8 +433,10 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
         return a.add(anims.moving_font(S, E, font, ...))
     end
 
-    if #next_talks == 0 and #schedule > 0 and sys.now() > 30 then
-        text(split_x, y, "No more talks :(", title_size, r,g,b,1)
+    if #schedule == 0 then
+        text(split_x, y, "Fetching talks...", title_size, rgba(default_color,1))
+    elseif #next_talks == 0 and #schedule > 0 and sys.now() > 30 then
+        text(split_x, y, "No more talks :(", title_size, rgba(default_color,1))
     end
 
     local now = api.clock.unix()
@@ -459,23 +472,30 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
         elseif talk.start_unix > now then
             time = talk.start_str
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, r,g,b,1)
+            text(x+split_x-w, y, time, time_size, rgba(default_color, 1))
         else
             time = string.format("%d min ago", math.ceil(-til/60))
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, r,g,b,.8)
+            text(x+split_x-w, y, time, time_size, rgba(default_color,.8))
         end
+
+        -- track bar
+        a.add(anims.moving_image_raw(
+            S, E, talk.track.background,
+            x+split_x-25, y, x+split_x-12,
+            y + title_size*#title_lines + 3 + #info_lines*info_size
+        ))
 
         -- title
         for idx = 1, #title_lines do
-            text(x+split_x, y, title_lines[idx], title_size, r,g,b,1)
+            text(x+split_x, y, title_lines[idx], title_size, rgba(default_color,1))
             y = y + title_size
         end
         y = y + 3
 
         -- info
         for idx = 1, #info_lines do
-            text(x+split_x, y, info_lines[idx], info_size, r,g,b,.8)
+            text(x+split_x, y, info_lines[idx], info_size, rgba(default_color,.8))
             y = y + info_size
         end
         y = y + 20
