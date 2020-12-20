@@ -5,7 +5,7 @@
     "repository": "https://github.com/info-beamer/package-scheduled-player",
     "version": "beta17",
     "lifecycle": "production",
-    "platforms": ["pi/epoch-1", "pi-4"],
+    "platforms": ["pi/epoch-1", "pi/epoch-2"],
     "runtime": {
         "outside_sources": true
     },
