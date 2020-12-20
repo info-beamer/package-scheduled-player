@@ -568,7 +568,7 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
 end
 
 function M.can_show(config)
-    local mode = config.mode
+    local mode = config.mode or 'all_talks'
     print("probing frab mode", mode)
     -- these can always play
     if mode == "day" or
