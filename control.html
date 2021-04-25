@@ -17,7 +17,7 @@
           for (var page_id in schedule.pages) {
             var page = schedule.pages[page_id];
             var interaction = page.interaction;
-            if (interaction.key == "remote") {
+            if (interaction.key == "remote" && triggers.indexOf(interaction.remote) == -1) {
               triggers.push(interaction.remote);
             }
           }

@@ -1612,6 +1612,8 @@ local function PageSource()
     local cycle_pages = {}
     local cycle_offset = 0
 
+    local find_offset = 0
+
     local fallback
     local debug_schedule_id, debug_page_id
 
@@ -1788,35 +1790,52 @@ local function PageSource()
         end
     end
 
+    local function select_next_find(pages)
+        if #pages == 0 then
+            return
+        end
+        find_offset = find_offset + 1
+        if find_offset > #pages then
+            find_offset = 1
+        end
+        return pages[find_offset]
+    end
+
     local function find_by_key(key)
+        local pages = {}
         for schedule_id, schedule in ipairs(schedules) do
             for page_id, page in ipairs(schedule.pages) do
                 if page.interaction.key == key then
-                    return Page(page)
+                    pages[#pages+1] = Page(page)
                 end
             end
         end
+        return select_next_find(pages)
     end
 
     local function find_by_gpio(pin)
+        local pages = {}
         local key = string.format("gpio_%d", pin)
         for schedule_id, schedule in ipairs(schedules) do
             for page_id, page in ipairs(schedule.pages) do
                 if page.interaction.key == key then
-                    return Page(page)
+                    pages[#pages+1] = Page(page)
                 end
             end
         end
+        return select_next_find(pages)
     end
 
     local function find_by_remote(remote)
+        local pages = {}
         for schedule_id, schedule in ipairs(schedules) do
             for page_id, page in ipairs(schedule.pages) do
                 if page.interaction.key == 'remote' and page.interaction.remote == remote then
-                    return Page(page)
+                    pages[#pages+1] = Page(page)
                 end
             end
         end
+        return select_next_find(pages)
     end
 
     local function get_page(schedule_id, page_id)
