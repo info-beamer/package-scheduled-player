@@ -573,7 +573,7 @@ Vue.component('schedule-panel', {
       group: {
         name: 'page-list',
         pull: true,
-        put: ['page-list', 'asset-list'],
+        put: ['page-list'],
       }
     },
   }),
@@ -586,36 +586,6 @@ Vue.component('schedule-panel', {
         return this.schedule.pages
       },
       set(pages) {
-        for (var idx = 0; idx < pages.length; idx++) {
-          var page = pages[idx];
-          // if an asset was dropped, convert it to a page
-          if (page.id != undefined) {
-            var asset = page;
-            var duration = asset.metadata.duration || 10;
-
-            var config, type;
-            if (asset.filetype == "image") {
-              type = "image";
-              config = {};
-            } else if (asset.filetype == "video") {
-              type = "rawvideo";
-              config = {"layer":-5};
-            }
-            pages[idx] = {
-              duration: 0,
-              auto_duration: duration,
-              tiles: [{
-                asset: asset.id,
-                config: config,
-                type: type,
-                x1: 0,
-                y1: 0,
-                x2: this.screen.width,
-                y2: this.screen.height,
-              }]
-            }
-          }
-        }
         this.$store.commit('schedule_pages_update', {
           schedule_id: this.schedule_id,
           pages: pages,
@@ -728,6 +698,48 @@ Vue.component('schedule-panel', {
         }
       })
     },
+    onAddAssets() {
+      var that = this;
+      ib.assetChooser({
+        filter: ['image', 'video'],
+        features: ['image2k', 'h264', 'hevc'],
+        no_node_assets: true,
+        multi_select: true,
+      }).then(function(selection) {
+        var assets = that.$store.state.assets;
+        for (var idx = 0; idx < selection.length; idx++) {
+          var selected = selection[idx]
+          var asset = assets[selected.id]
+          var duration = asset.metadata.duration || 10;
+          var config, type;
+          if (asset.filetype == "image") {
+            type = "image";
+            config = {};
+          } else if (asset.filetype == "video") {
+            type = "rawvideo";
+            config = {"layer":5};
+          }
+          var page_id = that.pages.length;
+          that.$store.commit('page_create', {
+            schedule_id: that.schedule_id,
+            after_page_id: page_id-1,
+          })
+          that.$store.dispatch('page_tile_create', {
+            schedule_id: that.schedule_id,
+            page_id: page_id,
+            tile: {
+              type: type,
+              asset: asset.id,
+              config: config,
+              x1: 0,
+              y1: 0,
+              x2: that.screen.width,
+              y2: that.screen.height,
+            }
+          })
+        }
+      })
+    }
   }
 })
 
@@ -1007,6 +1019,7 @@ Vue.component('tile-editor', {
       forceFallback: isChrome,
       handle: '.handle',
     },
+    show_more: false,
     selected_tile_id: undefined,
   }),
   computed: {
@@ -1566,129 +1579,21 @@ Vue.component('tile-detail', {
   }
 })
 
-// --------------------------
-// Default built-in asset browser
-// Might be replaced further down
-// with the native chooser.
-// --------------------------
+
 Vue.component('asset-browser', {
   template: '#asset-browser',
-  props: ["valid", "title", "help"],
-  data: () => ({
-    sorted: "filename",
-    open: false,
-    highlight: undefined,
-    search: "",
-    top: 0,
-  }),
-  computed: {
-    info() {
-      if (this.highlight == undefined) {
-        return "Click to select an asset";
-      } else {
-        return this.highlight.filename + " (" + this.highlight.filetype + ")";
-      }
-    },
-    assets() {
-      var valid = {};
-      for (var v of this.valid.split(",")) {
-        valid[v] = true;
-      }
-      var all_assets = [];
-      function add_all(assets) {
-        for (var asset_id in assets) {
-          var asset = assets[asset_id];
-          if (valid[asset.filetype]) {
-            all_assets.push({
-              id: asset.id,
-              thumb: asset.thumb,
-              filename: asset.filename,
-              filetype: asset.filetype,
-              uploaded: asset.uploaded || 0,
-            })
-          }
-        }
-      }
-      add_all(this.$store.state.assets);
-      add_all(this.$store.state.node_assets);
-      all_assets.sort({
-        filename: function(a, b) {
-          var fa = a.filename.toLocaleLowerCase();
-          var fb = b.filename.toLocaleLowerCase();
-          return fa.localeCompare(fb)
-        },
-        upload: function(a, b) { 
-          return b.uploaded - a.uploaded
-        },
-      }[this.sorted]);
-      return all_assets;
-    }
-  },
+  props: ["valid", "title", "help", "features"],
   methods: {
-    onToggleOpen(evt) {
-      this.open = !this.open;
-      this.top = evt.target.getBoundingClientRect().bottom;
-    },
-    onSelect(asset_spec) {
-      this.$emit('assetSelected', asset_spec);
-      this.open = false;
-    },
-    onHighlight(asset_spec) {
-      this.highlight = this.$store.state.assets[asset_spec] || 
-                       this.$store.state.node_assets[asset_spec];
-    }
-  },
-})
-
-Vue.component('asset-list', {
-  template: '#asset-list',
-  data: () => ({
-    sorted: "filename",
-    search: "",
-    asset_dd_options: {
-      forceFallback: isChrome,
-      group: {
-        name: 'asset-list',
-        pull: 'clone',
-        put: false,
-      }
-    },
-  }),
-  computed: {
-    assets() {
-      var result = [];
-      var assets = this.$store.state.assets
-      for (var asset_id in assets) {
-        var asset = assets[asset_id];
-        if (asset.filename.toLocaleLowerCase().indexOf(this.search) != -1) {
-          result.push(asset)
-        }
-      }
-      result.sort({
-        filename: function(a, b) {
-          var fa = a.filename.toLocaleLowerCase();
-          var fb = b.filename.toLocaleLowerCase();
-          return fa.localeCompare(fb)
-        },
-        upload: function(a, b) { 
-          return b.uploaded - a.uploaded
-        },
-      }[this.sorted]);
-      console.log("RES", result);
-      return result.splice(0, 30);
-    }
-  },
-  methods: {
-    onSearch(query) {
-      this.search = query.toLocaleLowerCase();
-    },
-    onAddToEnd(asset) {
-      this.$emit('assetSelected', {
-        type: asset.filetype,
-        asset_spec: asset.id,
+    onOpen() {
+      var that = this;
+      ib.assetChooser({
+        filter: this.valid.split(','),
+        features: this.features || ['image2k', 'h264'],
+      }).then(function(selected) {
+        selected && that.$emit('assetSelected', selected.id);
       })
-    }
-  },
+    },
+  }
 })
 
 Vue.component('date-select', {
@@ -2254,26 +2159,6 @@ Vue.component('interaction-ui', {
   }
 })
 
-function install_native_asset_chooser() {
-  console.log("installing native asset chooser");
-  delete Vue.options.components['asset-browser'];
-  Vue.component('asset-browser', {
-    template: '#asset-browser-native',
-    props: ["valid", "title", "help", "features"],
-    methods: {
-      onOpen() {
-        var that = this;
-        ib.assetChooser({
-          filter: this.valid.split(','),
-          features: this.features || ['image2k', 'h264'],
-        }).then(function(selected) {
-          selected && that.$emit('assetSelected', selected.id);
-        })
-      },
-    }
-  })
-}
-
 new Vue({
   el: "#app",
   store,
@@ -2281,9 +2166,6 @@ new Vue({
 
 ib.setDefaultStyle();
 ib.ready.then(() => {
-  if (ib.assetChooser) {
-    install_native_asset_chooser()
-  }
   ib.onAssetUpdate(() => {
     console.log("assets updated")
     store.commit('assets_update', ib.assets)

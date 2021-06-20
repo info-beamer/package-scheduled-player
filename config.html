@@ -92,27 +92,14 @@
         border-top-left-radius: 3px;
         border-top-right-radius: 3px;
       }
-      .no-tiles {
-        text-align: center;
-        font-style: italic;
+      .add-tile-panel .intro {
+        display: inline-block;
+        float: left;
+        margin-top: 8px;
+        margin-left: 5px;
       }
       .asset-filter {
         margin-bottom: 5px;
-      }
-      .asset-list tr {
-        background-color: white;
-      }
-      .asset-list .filename {
-        display: inline-block;
-        max-width: 200px;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-      }
-      .asset-list .thumb {
-        vertical-align: baseline;
-        width: 16px;
-        height: 16px;
       }
       .compact-thumb {
         width: 32px;
@@ -144,15 +131,14 @@
       .table-clickable tr {
         cursor: pointer;
       }
-      .playlist-title {
-        height: 49px;
-      }
       .schedule-header {
-        border-top: 1px solid #c4c4c4;
+        border-top: 3px solid #c4c4c4;
+        /*
         border-top-left-radius: 10px;
         border-top-right-radius: 10px;
+        */
         padding: 10px;
-        box-shadow: inset 0px 11px 40px -20px #b2b2b2;
+        box-shadow: inset 0 30px 20px -20px #e8e8e8;
       }
       .schedule-name {
         display: inline-block !important;
@@ -390,6 +376,7 @@
                 @onSelected="onSetConfigValue('resolution', $event)">
               </select-dropdown>
             </div>
+            <!--
             <div class='col-xs-4'>
               <label class='field-label'>
                 Turn off display if nothing scheduled
@@ -400,9 +387,7 @@
                 @change="onSetConfigValue('poweroff', $event.target.checked)">
                 (not implemented yet)
             </div>
-          </div>
-          <br/>
-          <div class='row'>
+            -->
             <div class='col-xs-4'>
               <label class='field-label'>
                 Background Color
@@ -459,7 +444,10 @@
         <div v-for="layout, layout_id in layouts">
           <layout-editor :layout_id="layout_id"/>
         </div>
-
+        <div class='alert alert-info' v-if='layouts.length == 0'>
+          Layouts allow you to prepare templates that can be
+          reused across multiple pages.
+        </div>
         <div class='text-right button-row'>
           <button class='btn btn-default' @click="onAdd">
             <span class='glyphicon glyphicon-plus'></span>
@@ -539,11 +527,6 @@
               <option value="all">all pages one after the other</option>
               <option value="random-1">one randomly selected page</option>
             </select>
-
-            &nbsp;
-
-            &nbsp;
-
           </div>
 
           <time-editor
@@ -560,21 +543,20 @@
           />
         </div>
 
-        <div v-if='compact' class='row'>
-          <div class='col-xs-6'>
-            <h4>
-              <button class='btn btn-default' @click="compact=false">
-                <span class='glyphicon glyphicon-th-large'></span>
-                &nbsp;
-                Switch to detailed editor
-              </button>
-            </h4>
-            <div class='playlist-title'>
+        <div v-if='compact'>
+          <h4>
+            <button class='btn btn-default' @click="compact=false">
+              <span class='glyphicon glyphicon-th-large'></span>
+              &nbsp;
+              Switch to detailed editor
+            </button>
+          </h4>
+          <template v-if='pages.length > 0'>
+            <div>
               Playlist: {{pages.length}} pages, {{duration}}s play time
             </div>
             <table class='table table-condensed table-bordered table-hover table-clickable'>
               <draggable
-                :class="{'drag-target': pages.length == 0}"
                 element='tbody'
                 v-model="pages"
                 :options="page_dd_options">
@@ -584,30 +566,14 @@
                   :page_id="page_id"/>
               </draggable>
             </table>
-            <div v-if="pages.length == 0" class='alert alert-info'>
-              Empty playlist. Drop assets from the right side into the above
-              box to get started.
-            </div>
-            <!--
-            <div class='btn-group pull-right'>
-              <asset-browser
-                valid="image"
-                title="Add Image"
-                @assetSelected="onAddPage('image', $event)">
-              </asset-browser>
-              <asset-browser
-                valid="video"
-                title="Add Video"
-                @assetSelected="onAddPage('video', $event)">
-              </asset-browser>
-            </div>
-            -->
+          </template>
+          <div v-else class='alert alert-info'>
+            Empty playlist. Click the 'Add assets' button to get started.
           </div>
-          <div class='col-xs-6'>
-            <h4>Available Assets</h4>
-            <asset-list
-              @assetSelected="onAddPage($event.type, $event.asset_spec)"
-            />
+          <div class='btn-group pull-right'>
+            <button class='btn btn-default' @click="onAddAssets">
+              Add assets..
+            </button>
           </div>
         </div>
 
@@ -640,53 +606,6 @@
             </div>
           </div>
         </template>
-      </div>
-    </script>
-
-    <script type="text/x-template" id="asset-list">
-      <div>
-        <div class='asset-filter'>
-          <div class="form-group">
-            <div class="input-group">
-              <div class="input-group-addon">
-                <span class='glyphicon glyphicon-search'></span>
-              </div>
-              <input class='form-control search'
-                placeholder="Search your assets"
-                @keyup="onSearch($event.target.value)"
-                @change="onSearch($event.target.value)"
-              >
-            </div>
-          </div>
-        </div>
-        <table class='table table-condensed table-bordered table-hover table-clickable asset-list'>
-          <draggable element='tbody' v-model="assets" :options="asset_dd_options">
-            <tr v-for='asset in assets' @click='onAddToEnd(asset)'>
-              <td colspan=2>
-                <img :src="asset.thumb + '?size=16'" class='thumb'>
-                <span class='filename'>
-                  {{asset.filename}}
-                </span>
-              </td>
-              <td class='text-right'>
-                <span v-if='asset.filetype == "image" && asset.metadata'>
-                  {{asset.metadata.width}} × {{asset.metadata.height}}
-                </span>
-                <span v-if='asset.filetype == "video" && asset.metadata'>
-                  {{asset.metadata.duration.toFixed(2)}}s
-                </span>
-              </td>
-            </tr>
-          </draggable>
-        </table>
-        <!--
-        <button class='btn btn-default' @click='sorted = "filename"'>
-          By Filename
-        </button>
-        <button class='btn btn-default' @click='sorted = "upload"'>
-          By Upload Time
-        </button>
-        -->
       </div>
     </script>
 
@@ -1036,38 +955,54 @@
           />
         </div>
         <div class='add-tile-panel'>
-          <asset-browser
-            title="Image"
-            valid="image"
-            :features="['image2k', 'image4k']"
-            @assetSelected="onAddTile('image', $event)">
-          </asset-browser>
-          <asset-browser
-            title="Video"
-            valid="video"
-            :features="['h264']"
-            @assetSelected="onAddTile('video', $event)">
-          </asset-browser>
-          <asset-browser
-            title="HD Video"
-            valid="video"
-            :features="['h264', 'hevc']"
-            @assetSelected="onAddTile('rawvideo', $event)">
-          </asset-browser>
-          <button class='btn btn-default' @click="onAddTile('stream', 'stream.png')">Stream</button>
-          <asset-browser
-            title="Text"
-            valid="font"
-            @assetSelected="onAddTile('markup', $event)">
-          </asset-browser>
-          <asset-browser
-            title="Plugin"
-            valid="child"
-            @assetSelected="onAddTile('child', $event)">
-          </asset-browser>
-          <button class='btn btn-default' @click="onAddTile('flat', 'flat.png')">Flat</button>
-          <button class='btn btn-default' @click="onAddTile('time', 'time.png')">Time</button>
-          <button class='btn btn-default' @click="onAddTile('countdown', 'countdown.png')">Countdown</button>
+          <template v-if='!show_more'>
+            <span class='intro'>
+              Add tile..
+            </span>
+            <asset-browser
+              title="Image"
+              valid="image"
+              :features="['image2k', 'image4k']"
+              @assetSelected="onAddTile('image', $event)">
+            </asset-browser>
+            <asset-browser
+              title="HD Video"
+              valid="video"
+              :features="['h264', 'hevc']"
+              @assetSelected="onAddTile('rawvideo', $event)">
+            </asset-browser>
+            <button class='btn btn-default' @click="onAddTile('stream', 'stream.png')">Stream</button>
+            <asset-browser
+              title="Text"
+              valid="font"
+              @assetSelected="onAddTile('markup', $event)">
+            </asset-browser>
+            <asset-browser
+              title="Plugin"
+              valid="child"
+              @assetSelected="onAddTile('child', $event)">
+            </asset-browser>
+            <button class='btn btn-defaukt' @click="show_more = true">
+              ▾
+            </button>
+          </template>
+          <template v-else>
+            <span class='intro'>
+              Add special tile..
+            </span>
+            <asset-browser
+              title="GL based Video"
+              valid="video"
+              :features="['h264']"
+              @assetSelected="onAddTile('video', $event)">
+            </asset-browser>
+            <button class='btn btn-default' @click="onAddTile('flat', 'flat.png')">Flat</button>
+            <button class='btn btn-default' @click="onAddTile('time', 'time.png')">Time</button>
+            <button class='btn btn-default' @click="onAddTile('countdown', 'countdown.png')">Countdown</button>
+            <button class='btn btn-defaukt' @click="show_more = false">
+              ▴
+            </button>
+          </template>
         </div>
         <div>
           <table class="table table-condensed table-bordered table-hover table-clickable">
@@ -1517,60 +1452,10 @@
       </div>
     </script>
 
-    <script type="text/x-template" id="asset-browser-native">
+    <script type="text/x-template" id="asset-browser">
       <button class='btn btn-default' @click="onOpen">
         {{title}}
       </button>
-    </script>
-
-    <script type="text/x-template" id="asset-browser">
-      <span>
-        <button class='btn btn-default' v-if="open" @click="onToggleOpen">
-          {{title}} ▴
-        </button>
-        <button class='btn btn-default' v-else @click="onToggleOpen">
-          {{title}} ▾
-        </button>
-        <div
-          v-if="open"
-          class='popup panel panel-default'
-          :style="{top: top + 'px'}">
-          <div class="panel-heading">
-            Asset Select
-            <button class='btn btn-sm btn-default' @click='sorted = "filename"'>
-              By Filename
-            </button>
-            <button class='btn btn-sm btn-default' @click='sorted = "upload"'>
-              By Upload Time
-            </button>
-            <div
-              @click="open = false"
-              class='btn btn-md pull-right'>
-              <span class='glyphicon glyphicon-remove'></span>
-            </div>
-            <div v-if='help' class='btn btn-sm pull-right'>
-              <span class='glyphicon glyphicon-info-sign'></span>
-              {{help}}
-            </div>
-          </div>
-          <div class="panel-body">
-            <div class="row asset-icon">
-              <div class="col-xs-2" v-for="asset in assets">
-                <img
-                  class='asset'
-                  :class="{highlighted: highlight && highlight.id == asset.id}"
-                  :src="asset.thumb"
-                  @click="onSelect(asset.id)"
-                  @mouseover="onHighlight(asset.id)">
-                </img>
-              </div>
-            </div>
-          </div>
-          <div class="panel-footer">
-            {{info}}
-          </div>
-        </div>
-      </span>
     </script>
 
     <script type="text/x-template" id="select-dropdown">
@@ -1649,6 +1534,11 @@
           filetype: 'video',
           filename: 'AAAz.mp4',
           uploaded: 1469007145,
+          metadata: {
+            duration: 12.34,
+            width: 1280,
+            height: 720,
+          },
         }
       }
       for (var i = 0; i < 10; i++) {
