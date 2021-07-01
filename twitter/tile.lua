@@ -1,6 +1,7 @@
 local api, CHILDS, CONTENTS = ...
 
 local json = require "json"
+local utf8 = require "utf8"
 local utils = require(api.localized "utils")
 local anims = require(api.localized "anims")
 
@@ -28,14 +29,35 @@ local function wrap(str, font, size, max_w)
 
     local remaining = max_w
     local line = {}
-    for non_space in str:gmatch("%S+") do
-        local w = font:width(non_space, size)
+    local tokens = {}
+    for token in utf8.gmatch(str, "%S+") do
+        local w = font:width(token, size)
+        if w >= max_w then
+            while #token > 0 do
+                local cut = #token
+                for take = 1, #token do
+                    local sub_token = utf8.sub(token, 1, take)
+                    w = font:width(sub_token, size)
+                    if w >= max_w then
+                        cut = take-1
+                        break
+                    end
+                end
+                tokens[#tokens+1] = utf8.sub(token, 1, cut)
+                token = utf8.sub(token, cut+1)
+            end
+        else
+            tokens[#tokens+1] = token
+        end
+    end
+    for _, token in ipairs(tokens) do
+        local w = font:width(token, size)
         if remaining - w < 0 then
             lines[#lines+1] = table.concat(line, "")
             line = {}
             remaining = max_w
         end
-        line[#line+1] = non_space
+        line[#line+1] = token
         line[#line+1] = " "
         remaining = remaining - w - space_w
     end
@@ -107,7 +129,6 @@ function M.updated_config_json(config)
     print "config updated"
 
     include_in_scroller = config.include_in_scroller
-    show_logo = config.show_logo
     font = resource.load_font(api.localized(config.font.asset_name))
     tweet_color = config.tweet_color
     profile_color = config.profile_color
@@ -191,13 +212,13 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
                 font:width(info, font_size*0.6)
             )
             a.add(anims.moving_image_raw(S,E, shading,
-                x, y, x+profile_image_size+profile_width+2*margin+10, y+profile_image_size+2*margin+5, 1
+                x, y, x+profile_image_size+profile_width+2*margin+20, y+profile_image_size+2*margin+5, 1
             ))
         end
-        a.add(anims.moving_font(S, E, font, x+profile_image_size+10+margin, y+margin, name, font_size,
+        a.add(anims.moving_font(S, E, font, x+profile_image_size+20+margin, y+margin, name, font_size,
             profile_color.r, profile_color.g, profile_color.b, profile_color.a
         ))
-        a.add(anims.moving_font(S, E, font, x+profile_image_size+10+margin, y+font_size+5+margin, info, font_size*0.6,
+        a.add(anims.moving_font(S, E, font, x+profile_image_size+20+margin, y+font_size+5+margin, info, font_size*0.6,
             profile_color.r, profile_color.g, profile_color.b, profile_color.a*0.8
         )); S=S+0.1;
         -- a.add(anims.tweet_profile(S, E, x+margin, y+margin, profile, 120))
@@ -285,7 +306,7 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
     end
 
     if show_logo then
-        a.add(anims.logo(S, E, boundingbox_width-130, boundingbox_height-130, logo, 100))
+        a.add(anims.logo(S, E, boundingbox_width-105, boundingbox_height-95, logo, 100))
     end
 
     for now in api.frame_between(starts, ends) do

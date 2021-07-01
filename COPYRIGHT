@@ -101,20 +101,13 @@ frab/dependencies.zip/defusedxml
     PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
     https://github.com/tiran/defusedxml
 
-twitter/dependencies.zip/tweepy
-    MIT License
-    Copyright (c) 2013-2014 Joshua Roesslein
-    https://github.com/tweepy/tweepy
+twitter/default-font.ttf
+    based on
+        https://github.com/MorbZ/OpenSansEmoji
+        Licensed under the Apache License, Version 2.0
 
-twitter/dependencies.zip/requests_oauthlib
-    ISC License
-    Copyright (c) 2014 Kenneth Reitz.
-    https://github.com/requests/requests-oauthlib
-
-twitter/dependencies.zip/oauthlib
-    BSD 3 clause
-    Copyright (c) 2018 The OAuthlib Community
-    https://github.com/oauthlib/oauthlib
+        https://github.com/eosrei/twemoji-color-font
+        The artwork and TTF fonts are licensed CC-BY-4.0.
 
 7segment.ttf
     CC BY-SA

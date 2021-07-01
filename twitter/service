@@ -1,88 +1,154 @@
 #!/usr/bin/python
+import os
 import sys
-sys.path.insert(0, 'dependencies.zip')
 import time
 import traceback
-from datetime import datetime, date
-from Queue import Queue
+import hashlib
+import requests
+from PIL import Image
+from cStringIO import StringIO
+from contextlib import closing
+from hosted import config, api, node
 
-import tweepy
-from tweepy import OAuthHandler
-from tweepy.streaming import StreamListener
-from tweepy import Stream
+BLOCKED = set(line.strip() for line in open("blocked.txt") if line.strip())
 
-from hosted import config
-from twitter import cleanup, filter_and_save
+def cache_image(url, ext='jpg'):
+    cache_name = 'cache-image-%s.%s' % (hashlib.md5(url).hexdigest(), ext)
+    print >>sys.stderr, 'caching %s' % url
+    if not os.path.exists(cache_name):
+        try:
+            r = requests.get(url, timeout=20)
+            fobj = StringIO(r.content)
+            im = Image.open(fobj) # test if it opens
+            del fobj
+            im.save(cache_name)
+        except:
+            traceback.print_exc()
+            return
+    return cache_name
 
-incoming = Queue()
+def cache_video(url):
+    cache_name = 'cache-video-%s.mp4' % hashlib.md5(url).hexdigest()
+    print >>sys.stderr, 'caching %s' % url
+    if not os.path.exists(cache_name):
+        try:
+            with closing(requests.get(url, stream=True, timeout=20)) as r:
+                with open(cache_name, "wb") as out:
+                    for chunk in r.iter_content(chunk_size = 2**16):
+                        out.write(chunk)
+        except:
+            traceback.print_exc()
+            return
+    return cache_name
 
-class StreamHandler(StreamListener):
-    """ A listener handles tweets are the received from the stream.
-    This is a basic listener that just prints received tweets to stdout.
+def cache_images(urls):
+    cached_images = []
+    for url in urls:
+        cached = cache_image(url)
+        if cached:
+            cached_images.append(cached)
+    return cached_images
 
-    """
-    def on_status(self, tweet):
-        # print >>sys.stderr, tweet
-        incoming.put(tweet)
+def profile_image(url):
+    url = url.replace('normal', '200x200')
+    image = cache_image(url, 'png')
+    if not image:
+        return 'default-profile.png'
+    return image
 
-    def on_error(self, status):
-        print >>sys.stderr, "http status %r while fetching stream" % status
+def is_garbage_tweet(tweet):
+    if tweet['user']['name'] in BLOCKED:
+        print >>sys.stderr, "GARBAGE: blocked user"
+        return True
+
+    if tweet['user']['default']:
+        print >>sys.stderr, "GARBAGE: Default profile or image"
+        return True
+
+    if len(tweet['text']) < 10:
+        print >>sys.stderr, "GARBAGE: Too short"
+        return True
+
+    if tweet['text'].startswith("."):
+        print >>sys.stderr, "GARBAGE: Dot tweet"
+        return True
+
+    if tweet['text'].startswith("@"):
+        print >>sys.stderr, "GARBAGE: starts with @"
+        return True
+
+    if tweet['text'].startswith("RT "):
+        print >>sys.stderr, "GARBAGE: starts with RT"
+        return True
+
+    if tweet['user']['followers']< 10:
+        print >>sys.stderr, "GARBAGE: too few followers"
+        return True
+
+    if tweet['user']['description'] is None:
+        print >>sys.stderr, "GARBAGE: no description"
+        return True
+
+    return False
+
+def cleanup(max_age=12*3600):
+    now = time.time()
+    for filename in os.listdir("."):
+        if not filename.startswith('cache-'):
+            continue
+        age = now - os.path.getctime(filename)
+        if age > max_age:
+            try:
+                os.unlink(filename)
+            except:
+                traceback.print_exc()
 
 def main():
     config.restart_on_update()
 
     # wait till the configuration is non-empty. hosted
     # will restart this process when the configuration changes.
-    if not config.consumer_key or config.poll_interval == 0:
+    if config.poll_interval == 0 or not config.query.strip():
         print >>sys.stderr, "waiting for a config change"
         while 1: time.sleep(100000)
 
-    auth = OAuthHandler(config.consumer_key, config.consumer_secret)
-    auth.set_access_token(config.access_token, config.access_token_secret)
-    api = tweepy.API(auth)
-
-    try:
-        not_before = datetime.strptime(config.not_before, "%d.%m.%Y").date()
-    except ValueError:
-        traceback.print_exc()
-        not_before = date(1,1,1)
-
-    print >>sys.stderr, "not before %s" % not_before
-
-    if config.poll_interval == 'streaming':
-        stream = Stream(auth, StreamHandler())
-        track, follow = [], []
-        if config.mode == 'search':
-            track = [config.query]
-        elif config.mode == 'timeline':
-            follow = [config.query]
-        stream.filter(track=track, follow=follow, async=True)
-        tweets = []
-        while 1:
+    while 1:
+        try:
             cleanup()
-            tweet = incoming.get()
-            tweets.insert(0, tweet)
-            tweets = filter_and_save(tweets, not_before, config.count, config.filter_garbage)
 
-    else:
-        while 1:
-            try:
-                cleanup()
-                if config.mode == 'favs':
-                    tweets = api.favorites(config.query, count=config.count+20, tweet_mode='extended')
-                elif config.mode == 'search':
-                    tweets = api.search(q=config.query, count=config.count+20, tweet_mode='extended')
-                    import pprint
-                    pprint.pprint(tweets[0])
-                elif config.mode == 'timeline':
-                    tweets = api.user_timeline(screen_name=config.query, count=config.count+20, tweet_mode='extended')
+            tweets = api.twitter.get(params=dict(
+                query=config.query, qtype=config.qtype
+            ))
 
-                filter_and_save(tweets, not_before, config.count, config.filter_garbage)
-            except:
-                traceback.print_exc()
-                time.sleep(60)
-            else:
-                time.sleep(60 * config.poll_interval)
+            display_tweets = []
+            for tweet in tweets:
+                if config.filter_garbage and is_garbage_tweet(tweet):
+                    continue
+
+                display_tweet = dict(
+                    id = tweet['id'],
+                    name = tweet['user']['name'],
+                    created_at = tweet['created_at'],
+                    screen_name = tweet['user']['screen_name'],
+                    text = tweet['text'],
+                    profile_image = profile_image(tweet['user']['profile_image']),
+                    images = cache_images(tweet['images']),
+                )
+
+                if tweet['video']:
+                    display_tweet['video'] = dict(
+                        filename = cache_video(tweet['video']['url']),
+                    )
+                    if tweet['video']['duration']:
+                        display_tweet['video']['duration'] = tweet['video']['duration']
+                display_tweets.append(display_tweet)
+
+            node.write_json("tweets.json", display_tweets)
+        except:
+            traceback.print_exc()
+            time.sleep(60)
+        else:
+            time.sleep(60 * config.poll_interval)
 
 if __name__ == '__main__':
     main()

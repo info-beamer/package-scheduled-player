@@ -1,7 +1,7 @@
 {
     "name": "Plugin: Twitter",
     "permissions": {
-        "network": "Needs to access twitter API"
+        "network": "Needs to fetch tweets"
     },
     "deferred": [
         "tile.lua"
@@ -12,11 +12,10 @@
     }, {
         "title": "Mode",
         "ui_width": 3,
-        "name": "mode",
+        "name": "qtype",
         "type": "select",
         "options": [
-            ["timeline", "Show user tweets"],
-            ["favs", "Show user likes"],
+            ["user", "Show user tweets"],
             ["search", "Search tweets"]
         ],
         "default": "search"
@@ -25,7 +24,8 @@
         "ui_width": 3,
         "name": "query",
         "type": "string",
-        "default": "infobeamer"
+        "placeholder": "Username or search query",
+        "default": ""
     }, {
         "title": "Number of tweets",
         "ui_width": 3,
@@ -44,7 +44,6 @@
         "name": "poll_interval",
         "type": "select",
         "options": [
-            ["streaming", "Streaming (only for search/timeline)"],
             [0, "Do not poll (use bundled tweets)"],
             [2, "2 Minutes"],
             [5, "5 Minutes (default)"],
@@ -52,17 +51,11 @@
         ],
         "default": 5
     }, {
-        "title": "Exlude tweets before",
-        "ui_width": 3,
-        "name": "not_before",
-        "type": "string",
-        "default": "01.01.2016",
-        "hint": "Please use the DD.MM.YYYY format"
-    }, {
-        "title": "Filter garbage",
-        "ui_width": 3,
-        "hint": "Remote RT/default profiles, dots and garbage profiles",
+        "title": "Filter noise",
+        "ui_width": 6,
+        "hint": "Remove RT/default profiles, dots and default profiles",
         "name": "filter_garbage",
+        "info": "Remove low quality content (default profiles, etc)",
         "type": "boolean",
         "default": true
     }, {
@@ -159,40 +152,5 @@
             ["under", "Below Image"]
         ],
         "default": "over"
-    }, {
-        "title": "Branding",
-        "ui_width": 3,
-        "name": "show_logo",
-        "type": "boolean",
-        "info": "Add Twitter logo",
-        "default": true
-    }, 
-    {
-        "title": "Authentication",
-        "type": "section"
-    }, {
-        "title": "API Key",
-        "ui_width": 6,
-        "name": "consumer_key",
-        "type": "string",
-        "default": ""
-    },{
-        "title": "API Secret",
-        "ui_width": 6,
-        "name": "consumer_secret",
-        "type": "string",
-        "default": ""
-    }, {
-        "title": "Access Token",
-        "ui_width": 6,
-        "name": "access_token",
-        "type": "string",
-        "default": ""
-    },{
-        "title": "Access Token Secret",
-        "ui_width": 6,
-        "name": "access_token_secret",
-        "type": "string",
-        "default": ""
     }]
 }
