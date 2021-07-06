@@ -125,6 +125,10 @@ https://info-beamer.com/contact
 
 ### Version 18
 
+ * Rework UI to add tiles. Split into two and hide less used special tile types.
+ * Simplified "Compact playlist editor" and make use of the native asset selector.
+ * Reworked twitter tile to make use of a new info-beamer provided twitter API.
+ * A remote trigger now schedules all pages having the matching trigger keyword instead of only a single one.
  * Added "Copy" button to copy a page.
  * Click on an image/video filename in the tile list to change the assets.
 
