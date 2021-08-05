@@ -2049,4 +2049,6 @@ function node.render()
     --                     WIDTH/2, HEIGHT/2, 0)
 
     job_queue.tick(now)
+
+    dispatch_to_all_tiles("overlay")
 end
