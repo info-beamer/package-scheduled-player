@@ -717,7 +717,7 @@ Vue.component('schedule-panel', {
             config = {};
           } else if (asset.filetype == "video") {
             type = "rawvideo";
-            config = {"layer":5};
+            config = {"layer":-5};
           }
           var page_id = that.pages.length;
           that.$store.commit('page_create', {
