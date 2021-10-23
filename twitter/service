@@ -21,7 +21,7 @@ def cache_image(url, ext='jpg'):
             fobj = StringIO(r.content)
             im = Image.open(fobj) # test if it opens
             del fobj
-            im.save(cache_name)
+            im.convert('RGB').save(cache_name)
         except:
             traceback.print_exc()
             return
