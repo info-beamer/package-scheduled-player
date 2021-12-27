@@ -464,6 +464,10 @@ Vue.component('config-ui', {
       [[1920, 540], "1920x540"],
       [[1680, 1050], "1680x1050"],
     ],
+    triggers: [
+      ["next", "Show next match"],
+      ["all", "Enqueue all matches"],
+    ],
   }),
   computed: {
     timezones() {
@@ -475,6 +479,7 @@ Vue.component('config-ui', {
     timezone() { return this.config.timezone; },
     rotation() { return this.config.rotation; },
     resolution() { return this.config.resolution; },
+    trigger() { return this.config.trigger; },
     pages() { return this.config.pages; },
     is_debugged() {
       return this.config.scratch.debug_schedule_id != undefined;

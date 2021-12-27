@@ -92,6 +92,16 @@
         "name": "scratch",
         "type": "json",
         "default": {}
+    }, {
+        "title": "Trigger behaviour",
+        "ui_width": 4,
+        "name": "trigger",
+        "type": "select",
+        "options": [
+            ["next", "Show next match"],
+            ["all", "Enqueue all matches"]
+        ],
+        "default": "next"
     },
 
     {

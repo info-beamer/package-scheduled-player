@@ -1511,6 +1511,15 @@ local function Scheduler(page_source, job_queue)
         next_schedule = sys.now()
     end
 
+    local function enqueue_interactive(pages)
+        reset_scheduler()
+
+        for i, page in ipairs(pages) do
+            local duration = page.get_duration "interactive"
+            enqueue_page(page, duration)
+        end
+    end
+
     local function handle_keyboard(event)
         -- if event.action ~= "down" and event.action ~= "hold" then
         if event.action ~= "down" then
@@ -1534,52 +1543,36 @@ local function Scheduler(page_source, job_queue)
             return
         end
 
-        local page = page_source.find_by_key(event.key)
-        if not page then
+        local pages = page_source.find_by_key(event.key)
+        if not pages then
             return
         end
-
-        local duration = page.get_duration "interactive"
-
-        reset_scheduler()
-        enqueue_page(page, duration)
+        enqueue_interactive(pages)
     end
 
     local function handle_gamepad(event)
-        local page = page_source.find_by_key(event.key)
-        if not page then
+        local pages = page_source.find_by_key(event.key)
+        if not pages then
             return
         end
-
-        local duration = page.get_duration "interactive"
-
-        reset_scheduler()
-        enqueue_page(page, duration)
+        enqueue_interactive(pages)
     end
 
     local function handle_gpio(event)
-        local page = page_source.find_by_gpio(event.pin)
-        if not page then
+        local pages = page_source.find_by_gpio(event.pin)
+        if not pages then
             return
         end
-
-        local duration = page.get_duration "interactive"
-
-        reset_scheduler()
-        enqueue_page(page, duration)
+        enqueue_interactive(pages)
     end
 
     local function handle_remote_trigger(remote)
         print("remote trigger", remote)
-        local page = page_source.find_by_remote(remote)
-        if not page then
+        local pages = page_source.find_by_remote(remote)
+        if not pages then
             return
         end
-
-        local duration = page.get_duration "interactive"
-
-        reset_scheduler()
-        enqueue_page(page, duration)
+        enqueue_interactive(pages)
     end
 
     local function handle_cec(cec_key)
@@ -1616,6 +1609,7 @@ local function PageSource()
 
     local fallback
     local debug_schedule_id, debug_page_id
+    local trigger = "next"
 
     node.event("config_updated", function(config)
         schedules = config.schedules
@@ -1642,6 +1636,7 @@ local function PageSource()
         debug_schedule_id = config.scratch.debug_schedule_id
         debug_page_id = config.scratch.debug_page_id
         fallback = config.fallback
+        trigger = config.trigger
     end)
 
     local function date_within(starts, ends, test)
@@ -1791,14 +1786,22 @@ local function PageSource()
     end
 
     local function select_next_find(pages)
-        if #pages == 0 then
-            return
-        end
         find_offset = find_offset + 1
         if find_offset > #pages then
             find_offset = 1
         end
         return pages[find_offset]
+    end
+
+    local function triggered_pages(pages)
+        if #pages == 0 then
+            return
+        end
+        if trigger == "next" then
+            return {select_next_find(pages)}
+        else
+            return pages
+        end
     end
 
     local function find_by_key(key)
@@ -1810,7 +1813,7 @@ local function PageSource()
                 end
             end
         end
-        return select_next_find(pages)
+        return triggered_pages(pages)
     end
 
     local function find_by_gpio(pin)
@@ -1823,7 +1826,7 @@ local function PageSource()
                 end
             end
         end
-        return select_next_find(pages)
+        return triggered_pages(pages)
     end
 
     local function find_by_remote(remote)
@@ -1835,7 +1838,7 @@ local function PageSource()
                 end
             end
         end
-        return select_next_find(pages)
+        return triggered_pages(pages)
     end
 
     local function get_page(schedule_id, page_id)

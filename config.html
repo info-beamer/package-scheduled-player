@@ -430,6 +430,14 @@
                 <span class='glyphicon glyphicon-remove-sign'></span>
               </button>
             </div>
+            <div class='col-xs-4'>
+              <label class='field-label'>On trigger</label><br/>
+              <select-dropdown
+                :selected="trigger"
+                :values="triggers"
+                @onSelected="onSetConfigValue('trigger', $event)">
+              </select-dropdown>
+            </div>
           </div>
         </div>
 
