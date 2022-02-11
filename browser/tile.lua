@@ -7,6 +7,93 @@ local M = {}
 
 local fallback = resource.create_colored_texture(1,1,1,1)
 
+local function Snapshot(filename)
+    local fullpath = api.localized(filename)
+
+    local cur, cur_version = fallback, nil
+    local nxt, nxt_version
+
+    local function check_reload()
+        local fs_version = CONTENTS[fullpath]
+        if not fs_version then
+            -- no snapshot to load available
+            return
+        end
+
+        if cur_version == fs_version then
+            -- already loaded up-to-date version
+            return
+        end
+
+        if nxt then
+            local state = nxt:state() 
+            if state == "loaded" then
+                if cur ~= fallback then
+                    cur:dispose()
+                end
+                cur, cur_version = nxt, nxt_version
+                nxt, nxt_version = nil, nil
+                print("loading", fullpath, "complete. version", cur_version)
+            elseif state == "error" then
+                nxt:dispose()
+                cur, cur_version = fallback, nxt_version
+                nxt, nxt_version = nil, nil
+                print("loading", fullpath, "failed. using fallback")
+            end
+        end
+
+        if fs_version ~= cur_version then
+            if nxt_version and nxt_version == fs_version then
+                -- already loading
+                return
+            end
+
+            if nxt then
+                print("abort current loading process")
+                nxt:dispose()
+                nxt, nxt_version = nil, nil
+            end
+
+            local ok
+            ok, nxt = pcall(resource.load_image, fullpath)
+            if not ok then
+                print("cannot open snapshot", nxt)
+                nxt, nxt_version = nil, nil
+                return
+            end
+            nxt_version = fs_version
+            print("now loading", fullpath, fs_version)
+        end
+    end
+
+    local function draw(x1, y1, x2, y2)
+        check_reload()
+
+        if cur == fallback then
+            cur:draw(x1, y1, x2, y2)
+        else
+            util.draw_correct(cur, x1, y1, x2, y2)
+        end
+    end
+
+    local function dispose()
+        if nxt then
+            nxt:dispose()
+            nxt = nil
+        end
+        if cur ~= fallback then
+            cur:dispose()
+            cur = nil
+        end
+    end
+
+    return {
+        check_reload = check_reload,
+        draw = draw,
+        dispose = dispose,
+    }
+end
+
 function M.task(starts, ends, config, x1, y1, x2, y2)
     local url = config.url or ""
     local selector = config.selector or ""
@@ -25,38 +112,34 @@ function M.task(starts, ends, config, x1, y1, x2, y2)
         height = 1080
     end
 
-    local localfile = "browser-" .. md5.sumhexa(string.format(
-        "%s:%s:%d:%d:%d", url, selector, width, height, scale
+    local snapshot_filename = "browser-" .. md5.sumhexa(string.format(
+        "%s:%s:%d:%d:%d:%s", url, selector, width, height, scale, condition
     ))
 
     api.tcp_clients.send(PATH, json.encode{
-        url = url;
+        target = snapshot_filename,
+        url = url,
         max_age = max_age,
-        selector = selector;
-        target = localfile;
+        selector = selector,
         width = width,
         height = height,
         scale = scale,
         condition = condition,
     })
-    local ok, img = pcall(resource.load_image, api.localized(localfile))
-    if not ok then
-        img = fallback
-    end
+
+    local snapshot = Snapshot(snapshot_filename)
 
     api.wait_t(starts - 2)
+    snapshot.check_reload()
+
+    api.wait_t(starts - 1)
+    snapshot.check_reload()
 
     for now in api.frame_between(starts, ends) do
-        if img == fallback then
-            img:draw(x1, y1, x2, y2)
-        else
-            util.draw_correct(img, x1, y1, x2, y2)
-        end
+        snapshot.draw(x1, y1, x2, y2)
     end
 
-    if img ~= fallback then
-        img:dispose()
-    end
+    snapshot.dispose()
 end
 
 return M
