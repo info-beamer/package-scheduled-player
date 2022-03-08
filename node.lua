@@ -1399,7 +1399,19 @@ local function Page(page)
     local function get_duration(mode)
         local duration = page.duration
         if duration == 0 then
-            duration = page.auto_duration
+            duration = 10
+            for _, tile in ipairs(page.tiles) do
+                if tile.asset.metadata and tile.asset.metadata.duration then
+                    duration = max(duration, tile.asset.metadata.duration)
+                elseif tile.type == "child" then
+                    local child_name = tile.asset.asset_name
+                    local impl = tile_loader.modules[child_name]
+                    if impl.auto_duration then
+                        duration = max(duration, impl.auto_duration())
+                    end
+                end
+            end
+            print("automatically set auto duration is", duration)
         end
         if mode == "interactive" and page.interaction.duration == "forever" then
             duration = 100000000
