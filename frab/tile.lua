@@ -347,6 +347,13 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
             text(x+split_x-w, y, time, time_size, r,g,b,.8)
         end
 
+        -- track bar
+        a.add(anims.moving_image_raw(
+            S, E, talk.track.background,
+            x+split_x-25, y, x+split_x-12,
+            y + title_size*#title_lines + 3 + #info_lines*info_size
+        ))
+
         -- title
         for idx = 1, #title_lines do
             text(x+split_x, y, title_lines[idx], title_size, r,g,b,1)
