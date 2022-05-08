@@ -332,11 +332,11 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
         if til > -60 and til < 60 then
             time = "Now"
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, 0,.6,0.57,1)
+            text(x+split_x-w, y, time, time_size, r,g,b,1)
         elseif til > 0 and til < 15 * 60 then
             time = string.format("In %d min", math.floor(til/60))
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, 0,.6,0.57,1)
+            text(x+split_x-w, y, time, time_size, r,g,b,1)
         elseif talk.start_unix > now then
             time = talk.start_str
             local w = font:width(time, time_size)+time_size
@@ -469,11 +469,11 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
         if til > -60 and til < 60 then
             time = "Now"
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, 0,.6,0.57,1)
+            text(x+split_x-w, y, time, time_size, r,g,b,1)
         elseif til > 0 and til < 15 * 60 then
             time = string.format("In %d min", math.floor(til/60))
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, 0,.6,0.57,1)
+            text(x+split_x-w, y, time, time_size, r,g,b,1)
         elseif talk.start_unix > now then
             time = talk.start_str
             local w = font:width(time, time_size)+time_size
