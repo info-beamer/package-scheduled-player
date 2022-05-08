@@ -284,7 +284,7 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
 
     local split_x
     if align == "left" then
-        split_x = font:width("In 60 min", title_size)*1.5
+        split_x = font:width("In 60 min", title_size)*title_size
     else
         split_x = 0
     end
@@ -427,7 +427,7 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
 
     local split_x
     if align == "left" then
-        split_x = font:width("In 60 min", title_size)*1.5
+        split_x = font:width("In 60 min", title_size)*title_size
     else
         split_x = 0
     end
