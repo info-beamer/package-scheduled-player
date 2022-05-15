@@ -284,7 +284,7 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
 
     local split_x
     if align == "left" then
-        split_x = font:width("In 60 min", title_size)*1.5
+        split_x = font:width("In 60 min", title_size)+title_size
     else
         split_x = 0
     end
@@ -332,11 +332,11 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
         if til > -60 and til < 60 then
             time = "Now"
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, 0,.6,0.57,1)
+            text(x+split_x-w, y, time, time_size, r,g,b,1)
         elseif til > 0 and til < 15 * 60 then
             time = string.format("In %d min", math.floor(til/60))
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, 0,.6,0.57,1)
+            text(x+split_x-w, y, time, time_size, r,g,b,1)
         elseif talk.start_unix > now then
             time = talk.start_str
             local w = font:width(time, time_size)+time_size
@@ -346,6 +346,13 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
             local w = font:width(time, time_size)+time_size
             text(x+split_x-w, y, time, time_size, r,g,b,.8)
         end
+
+        -- track bar
+        a.add(anims.moving_image_raw(
+            S, E, talk.track.background,
+            x+split_x-25, y, x+split_x-12,
+            y + title_size*#title_lines + 3 + #info_lines*info_size
+        ))
 
         -- title
         for idx = 1, #title_lines do
@@ -420,7 +427,7 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
 
     local split_x
     if align == "left" then
-        split_x = font:width("In 60 min", title_size)*1.5
+        split_x = font:width("In 60 min", title_size)+title_size
     else
         split_x = 0
     end
@@ -462,11 +469,11 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
         if til > -60 and til < 60 then
             time = "Now"
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, 0,.6,0.57,1)
+            text(x+split_x-w, y, time, time_size, r,g,b,1)
         elseif til > 0 and til < 15 * 60 then
             time = string.format("In %d min", math.floor(til/60))
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, 0,.6,0.57,1)
+            text(x+split_x-w, y, time, time_size, r,g,b,1)
         elseif talk.start_unix > now then
             time = talk.start_str
             local w = font:width(time, time_size)+time_size
