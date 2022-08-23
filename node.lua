@@ -219,7 +219,9 @@ local error_img = resource.create_colored_texture(1,0,0,1)
 local function ImageCache()
     local images = {}
 
-    local function get(asset_name, keep) 
+    local get, register
+
+    function get(asset_name, keep)
         if not images[asset_name] then
             register(asset_name, keep)
         end
@@ -237,7 +239,7 @@ local function ImageCache()
         return image.obj
     end
 
-    local function register(asset_name, keep)
+    function register(asset_name, keep)
         log("imagecache", "register %s %d", asset_name, keep)
         if not images[asset_name] then
             images[asset_name] = {
