@@ -1445,10 +1445,10 @@ local function Page(page)
             end
         end
 
-        if page.layout_id == -1 then
+        local layout = layouts[page.layout_id+1]
+        if not layout then
             append_page_tiles()
         else
-            local layout = layouts[page.layout_id+1]
             for _, tile in ipairs(layout.tiles) do
                 if tile.type == "page" then
                     append_page_tiles()
