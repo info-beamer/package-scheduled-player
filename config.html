@@ -487,7 +487,7 @@
         <div class="panel-footer">
           <div class='row'>
             <div class='col-xs-12 text-right'>
-              <button class='btn btn-danger' @click="onDeleteLayout">
+              <button class='btn btn-danger' @click="onDeleteLayout" :disabled='layout_id != layouts.length-1'>
                 <span class='glyphicon glyphicon-trash'></span>
                 Delete
               </button>
