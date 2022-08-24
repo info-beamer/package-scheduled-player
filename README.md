@@ -123,6 +123,14 @@ This package can work offline, but only if some features are not used:
 Got feedback? Don't hesitate to get on contact with info-beamer support here:
 https://info-beamer.com/contact
 
+### Version 19
+
+ * Fixed deleted layouts preventing pages that used that layout from playing
+ * Prevent layout reordering by deletion
+ * Updated documentation
+ * Update browser snapshot immediately on receiving update
+ * Triggers can now optionally enqueues all pages using that trigger, not just the next one
+
 ### Version 18
 
  * Rework UI to add tiles. Split into two and hide less used special tile types.
