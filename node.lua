@@ -1401,7 +1401,6 @@ local function Page(page)
     local function get_duration(mode)
         local duration = page.duration
         if duration == 0 then
-            duration = 10
             for _, tile in ipairs(page.tiles) do
                 if tile.asset.metadata and tile.asset.metadata.duration then
                     duration = max(duration, tile.asset.metadata.duration)
@@ -1412,6 +1411,11 @@ local function Page(page)
                         duration = max(duration, impl.auto_duration())
                     end
                 end
+            end
+            if duration == 0 then
+                duration = 10
+            else
+                duration = math.max(2, duration)
             end
             print("automatically set auto duration is", duration)
         end
