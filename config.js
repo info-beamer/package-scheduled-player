@@ -819,6 +819,23 @@ Vue.component('page-compact', {
       }
       return thumbs;
     },
+    filename() {
+      var assets = this.$store.state.assets;
+      var node_assets = this.$store.state.node_assets;
+      function get_asset(asset_spec) {
+        return assets[asset_spec] || node_assets[asset_spec];
+      }
+      var filenames = [];
+      for (var idx = 0; idx < this.page.tiles.length; idx++) {
+        var tile = this.page.tiles[idx];
+        filenames.push(get_asset(tile.asset).filename);
+      }
+      if (filenames.length != 1) {
+        return ''
+      } else {
+        return filenames[0]
+      }
+    },
   },
   methods: {
     onDelete(evt) {

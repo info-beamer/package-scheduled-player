@@ -101,11 +101,20 @@
       .asset-filter {
         margin-bottom: 5px;
       }
-      .compact-thumb {
+      .compact-row.sortable-chosen {
+        background-color: white;
+        width: 100%;
+        display: table;
+      }
+      .compact-row .compact-thumb {
         width: 32px;
         height: 32px;
         margin-right: 5px;
         background-color: #ddd;
+      }
+      .compact-row .compact-info {
+        text-align: right;
+        padding: 10px;
       }
       .asset-icon {
         max-height: 500px;
@@ -638,12 +647,13 @@
     </script>
 
     <script type="text/x-template" id="page-compact">
-      <tr :class='{debugged: is_debugged}'>
+      <tr class='compact-row' :class='{debugged: is_debugged}'>
         <td>
           <span class='handle'></span>
           <img v-for="thumb in thumbs" class='compact-thumb' :src='thumb'>
+          {{filename}}
         </td>
-        <td class='text-right'>
+        <td class='compact-info' width='20%'>
           <span v-if='is_disabled'>
             Deactivated
           </span>
@@ -653,8 +663,6 @@
           <span v-else>
             {{duration.toFixed(2)}}s
           </span>
-        </td>
-        <td class="text-right">
           <button class='btn btn-xs btn-danger' @click="onDelete">
             <span class='glyphicon glyphicon-trash'></span>
           </button>
