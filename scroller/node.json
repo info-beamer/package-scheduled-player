@@ -24,8 +24,9 @@
         "options": [
             [ 50, "Slow"],
             [100, "Normal"],
-            [140, "Faster"],
-            [200, "Even Faster"]
+            [140, "Fast"],
+            [200, "Faster"],
+            [300, "Even faster"]
         ],
         "default": 100
     },
@@ -50,7 +51,7 @@
             "ui_width": 3,
             "type": "color",
             "name": "color",
-            "default": [0,0,0,0]
+            "default": [0,0,0,1]
         }, {
             "title": "Blink",
             "ui_width": 1,

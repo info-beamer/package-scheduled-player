@@ -45,10 +45,10 @@ local function draw_scroller(x, y, w, h)
     local now = sys.now()
     local delta = now - last
     last = now
-    local advance = math.floor(delta * speed)
+    local advance = delta * speed
 
     local idx = 1
-    local x = current_left
+    local x = math.floor(current_left+0.5)
 
     local function prepare_image(obj)
         if not obj then
