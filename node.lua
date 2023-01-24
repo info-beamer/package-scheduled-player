@@ -33,6 +33,13 @@ local function log(system, format, ...)
     return print(string.format("[%s] " .. format, system, ...))
 end
 
+local function permute(tab)
+    for i = 1, #tab do
+        local j = math.random(i, #tab)
+        tab[i], tab[j] = tab[j], tab[i]
+    end
+end
+
 local function json_nullify(val)
     if val == json.null then
         return
@@ -1895,15 +1902,31 @@ local function PageSource()
         end
 
         local display_mode = schedule.display_mode or "all"
+
+        -- take all pages
         if display_mode == "all" then
             log("schedule", "adding all pages")
             for p = 1, #filtered_pages do
                 pages[#pages+1] = filtered_pages[p]
             end
-        else -- random-1
-            log("schedule", "selecting a random page")
-            local random_page = math.random(1, #filtered_pages)
-            pages[#pages+1] = filtered_pages[random_page]
+            return
+        end
+
+        -- randomly select some/all from filtered pages
+        local sample = ({
+            ["random-1"] = 1,
+            ["random-2"] = 2,
+            ["random-3"] = 3,
+            ["random-4"] = 4,
+            ["random-5"] = 5,
+            ["random-6"] = 6,
+            ["random-all"] = 100000,
+        })[display_mode]
+        sample = math.min(sample, #filtered_pages)
+        log("schedule", "selecting %d random pages", sample)
+        permute(filtered_pages)
+        for p = 1, sample do
+            pages[#pages+1] = filtered_pages[p]
         end
     end
 

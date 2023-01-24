@@ -208,7 +208,13 @@
             "type": "select",
             "options": [
                 ["all", "all pages"],
-                ["random-1", "one random page"]
+                ["random-1", "one random page"],
+                ["random-2", "two random pages"],
+                ["random-3", "three random pages"],
+                ["random-4", "four random pages"],
+                ["random-5", "five random pages"],
+                ["random-6", "six random pages"],
+                ["random-all", "randomly shuffled pages"]
             ],
             "default": "all"
         }, {

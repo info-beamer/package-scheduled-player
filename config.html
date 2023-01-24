@@ -540,9 +540,17 @@
 
             show
 
-            <select v-model="display_mode" class="btn btn-default">
-              <option value="all">all pages one after the other</option>
-              <option value="random-1">one randomly selected page</option>
+            <select v-model="display_mode" class="btn btn-default btn-select">
+              <option class='text-left' value="all">all pages one after the other</option>
+              <option disabled></option>
+              <option class='text-left' value="random-1">one randomly selected page</option>
+              <option class='text-left' value="random-2">two randomly selected pages</option>
+              <option class='text-left' value="random-3">three randomly selected pages</option>
+              <option class='text-left' value="random-4">four randomly selected pages</option>
+              <option class='text-left' value="random-5">five randomly selected pages</option>
+              <option class='text-left' value="random-6">six randomly selected pages</option>
+              <option disabled></option>
+              <option class='text-left' value="random-all">all pages, but randomly shuffled</option>
             </select>
           </div>
 
