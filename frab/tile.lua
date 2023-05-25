@@ -318,7 +318,7 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
         )
 
         local info_lines = wrap(
-            rooms[talk.place].name_short .. speaker_intro,
+            rooms[talk.place].name_short .. talk.speaker_intro,
             font, info_size, a.width - split_x
         )
 
@@ -462,7 +462,7 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
         )
 
         local info_lines = wrap(
-            rooms[talk.place].name_short .. speaker_intro,
+            rooms[talk.place].name_short .. talk.speaker_intro,
             font, info_size, a.width - split_x
         )
 
