@@ -88,6 +88,13 @@ function M.updated_schedule_json(new_schedule)
                 talk.title = talk.title .. " (" .. talk.lang .. ")"
             end
 
+            talk.speaker_intro = (
+                #talk.speakers == 0 and "" or
+                (({
+                    de = " mit ",
+                })[talk.lang] or " with ") .. table.concat(talk.speakers, ", ")
+            )
+
             talk.track = tracks[talk.track] or {
                 name = talk.track,
                 background = fallback_track_background,
@@ -310,12 +317,9 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
             font, title_size, a.width - split_x
         )
 
-
         local info_lines = wrap(
-            rooms[talk.place].name_short .. (
-                #talk.speakers > 0 and
-                " with " .. table.concat(talk.speakers, ", ") or ""
-            ), font, info_size, a.width - split_x
+            rooms[talk.place].name_short .. speaker_intro,
+            font, info_size, a.width - split_x
         )
 
         if y + #title_lines * title_size + info_size > a.height then
@@ -458,10 +462,8 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
         )
 
         local info_lines = wrap(
-            rooms[talk.place].name_short .. (
-                #talk.speakers > 0 and
-                " with " .. table.concat(talk.speakers, ", ") or ""
-            ), font, info_size, a.width - split_x
+            rooms[talk.place].name_short .. speaker_intro,
+            font, info_size, a.width - split_x
         )
 
         if y + #title_lines * title_size + info_size > a.height then
