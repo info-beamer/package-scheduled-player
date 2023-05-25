@@ -309,10 +309,13 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
             talk.title,
             font, title_size, a.width - split_x
         )
-        pp(rooms)
+
+
         local info_lines = wrap(
-            rooms[talk.place].name_short .. " with " .. table.concat(talk.speakers, ", "), 
-            font, info_size, a.width - split_x
+            rooms[talk.place].name_short .. (
+                #talk.speakers > 0 and
+                " with " .. table.concat(talk.speakers, ", ") or ""
+            ), font, info_size, a.width - split_x
         )
 
         if y + #title_lines * title_size + info_size > a.height then
@@ -455,8 +458,10 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
         )
 
         local info_lines = wrap(
-            rooms[talk.place].name_short .. " with " .. table.concat(talk.speakers, ", "), 
-            font, info_size, a.width - split_x
+            rooms[talk.place].name_short .. (
+                #talk.speakers > 0 and
+                " with " .. table.concat(talk.speakers, ", ") or ""
+            ), font, info_size, a.width - split_x
         )
 
         if y + #title_lines * title_size + info_size > a.height then
