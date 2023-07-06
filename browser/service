@@ -55,6 +55,7 @@ def main():
                 height = height,
                 scale = scale,
                 condition = condition,
+                tz = config.metadata_timezone.zone,
                 max_age = max_age,
                 known = known,
             ))

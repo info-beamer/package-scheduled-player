@@ -353,7 +353,13 @@
           <div class='row'>
             <div class='col-xs-8'>
               <label class='field-label'>Timezone</label><br/>
+              <button class='btn btn-default btn-block' disabled v-if='timezone == "device"'>
+                <span class='glyphicon glyphicon-info-sign'></span>
+                Setup will use timezone configured for device running this setup.
+              </button>
               <select-dropdown
+                v-else
+                block=true
                 :selected="timezone"
                 :values="timezones"
                 @onSelected="onSetConfigValue('timezone', $event)">

@@ -17,7 +17,10 @@ from ibquery import InfoBeamerQuery
 
 config.restart_on_update()
 
-schedule_tz = pytz.timezone(config.timezone)
+if config.timezone == 'device':
+    schedule_tz = config.metadata_timezone
+else:
+    schedule_tz = pytz.timezone(config.timezone)
 
 def iter_tiles(types=None):
     for schedule in config.schedules:

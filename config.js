@@ -471,7 +471,10 @@ Vue.component('config-ui', {
   }),
   computed: {
     timezones() {
-      return TIMEZONES;
+      return [
+        ["device", "Use device's timezone"],
+        ["", ""],
+      ].concat(TIMEZONES)
     },
     config() {
       return this.$store.state.config;
