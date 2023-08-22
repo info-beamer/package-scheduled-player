@@ -21,14 +21,15 @@ local show_language_tags = true
 
 local M = {}
 
-util.data_mapper{
-    [api.localized "day"] = function(new_day)
-        day = new_day
-    end;
-}
-
 local function rgba(base, a)
     return base[1], base[2], base[3], a
+end
+
+function M.data_trigger(path, data)
+    if path == "day" then
+        day = tonumber(data)
+        print('day set to', day)
+    end
 end
 
 function M.updated_config_json(config)

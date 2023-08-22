@@ -2073,6 +2073,12 @@ util.data_mapper{
         return scheduler.handle_remote_trigger(data)
     end,
     ["sys/cec/key"] = scheduler.handle_cec,
+    ["plugin/(.*)/(.*)"] = function(tile_name, path, data)
+        local impl = tile_loader.modules[tile_name]
+        if impl and impl.data_trigger then
+            impl.data_trigger(path, data)
+        end
+    end,
 }
 
 function node.render()

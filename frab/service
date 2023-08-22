@@ -35,13 +35,14 @@ def current_time():
 def send_day(utc_now, ts):
     local_now = utc_now.astimezone(tz)
     now = local_now.replace(tzinfo=None)
-
     day = (now - BASE_DAY).days
-    node.send('/day:%d' % day)
+    node.send_raw('root/plugin/frab/day:%d' % day)
 
 def main():
     while 1:
         now, ts = current_time()
+        send_day(now, ts)
+
         if now.year < 2000:
             print >>sys.stderr, "too soon"
             time.sleep(1)
@@ -81,8 +82,8 @@ def main():
 
         deadline = time.time() + 60*10
         while time.time() < deadline:
-            utc_now, ts = current_time()
-            send_day(utc_now, ts)
+            now, ts = current_time()
+            send_day(now, ts)
             time.sleep(10)
 
 if __name__ == "__main__":
