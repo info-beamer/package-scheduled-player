@@ -41,8 +41,6 @@ def send_day(utc_now, ts):
 def main():
     while 1:
         now, ts = current_time()
-        send_day(now, ts)
-
         if now.year < 2000:
             print >>sys.stderr, "too soon"
             time.sleep(1)
