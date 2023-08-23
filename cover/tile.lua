@@ -22,9 +22,8 @@ local alpha = Transition(0, 0, 1)
 
 function M.data_trigger(path, data)
     if path == "alpha" then
-        local target = tonumber(data)
-        alpha = Transition(alpha(), target, 1)
-        print("alpha set to", target)
+        local new_alpha, duration = data:match "([^,]+),([^,]+)"
+        alpha = Transition(alpha(), tonumber(new_alpha), tonumber(duration))
     end
 end
 
