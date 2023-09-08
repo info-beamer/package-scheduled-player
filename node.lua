@@ -1405,7 +1405,7 @@ node.event("config_updated", function(config)
 end)
 
 local function Page(page)
-    local function get_duration(mode)
+    local function get_duration(playback_mode)
         local duration = page.duration
         if duration == 0 then
             for _, tile in ipairs(page.tiles) do
@@ -1426,8 +1426,8 @@ local function Page(page)
             end
             print("automatically set auto duration is", duration)
         end
-        if mode == "interactive" and page.interaction.duration == "forever" then
-            duration = 100000000
+        if playback_mode == "interactive" and page.interaction.duration == "forever" then
+            duration = "forever"
         end
         return duration
     end
@@ -1483,13 +1483,32 @@ local function Scheduler(page_source, job_queue)
     local SCHEDULE_LOOKAHEAD = 2
 
     local scheduled_until = sys.now()
-    local next_schedule = 0
+
     local showing_fallback = false
+    local scheduled_forever = false
 
-    local function enqueue_page(page, duration)
-        duration = duration or page.get_duration()
+    local function enqueue_page(page, playback_mode)
+        playback_mode = playback_mode or "default"
+
+        local duration = page.get_duration(playback_mode)
+
+        local starts = scheduled_until
+        local ends
+
+        if duration == "forever" then
+            -- more than 1000 days, so close enough
+            ends = starts + 100000000
+
+            -- If a 'forever' page is scheduled, note that this
+            -- is the case, so the config watcher can use this
+            -- in its decision on whether or not to reset the
+            -- scheduled jobs.
+            scheduled_forever = true
+        else
+            ends = starts + duration
+        end
+
         local tiles = page.get_tiles()
-
         for _, tile in ipairs(tiles) do
             local handler = ({
                 image = ImageTile,
@@ -1506,24 +1525,27 @@ local function Scheduler(page_source, job_queue)
             -- print "adding tile"
             job_queue.add(
                 handler(tile.asset, tile.config, tile.x1, tile.y1, tile.x2, tile.y2),
-                scheduled_until,
-                scheduled_until + duration
+                starts, ends
             )
         end
 
-        scheduled_until = scheduled_until + duration
-        next_schedule = scheduled_until - SCHEDULE_LOOKAHEAD
-        showing_fallback = page.is_fallback
-
-        tcp_clients.send(
-            "root/__fallback__",
-            page.is_fallback and "1" or "0"
+        job_queue.add(
+            function(starts, ends)
+                helper.wait_t(starts)
+                showing_fallback = page.is_fallback
+                tcp_clients.send(
+                    "root/__fallback__",
+                    page.is_fallback and "1" or "0"
+                )
+            end,
+            starts, ends
         )
-        -- print("FALLBACK?", showing_fallback)
+
+        scheduled_until = ends
     end
 
     local function tick(now)
-        if now < next_schedule then
+        if now < scheduled_until - SCHEDULE_LOOKAHEAD then
             return
         end
 
@@ -1532,16 +1554,14 @@ local function Scheduler(page_source, job_queue)
 
     local function reset_scheduler()
         job_queue.flush()
+        scheduled_forever = false
         scheduled_until = sys.now()
-        next_schedule = sys.now()
     end
 
     local function enqueue_interactive(pages)
         reset_scheduler()
-
         for i, page in ipairs(pages) do
-            local duration = page.get_duration "interactive"
-            enqueue_page(page, duration)
+            enqueue_page(page, "interactive")
         end
     end
 
@@ -1613,6 +1633,34 @@ local function Scheduler(page_source, job_queue)
             return
         end
     end
+
+    local last_setup_id, last_config_hash
+
+    node.event("config_updated", function(config)
+        local setup_id = config.__metadata.setup_id
+        local config_hash = config.__metadata.config_hash
+        local reset_mode = config.reset_mode
+
+        local force_reset
+
+        if reset_mode == "config" then
+            force_reset = config_hash ~= last_config_hash
+        elseif reset_mode == "setup" then
+            force_reset = setup_id ~= last_setup_id
+        elseif reset_mode == "in_forever" then
+            force_reset = scheduled_forever and config_hash ~= last_config_hash
+        else -- "none"
+            force_reset = false
+        end
+
+        if force_reset then
+            print("config updated: forcing scheduler reset")
+            reset_scheduler()
+        end
+
+        last_setup_id = setup_id
+        last_config_hash = config_hash
+    end)
 
     return {
         tick = tick;

@@ -16,6 +16,38 @@
         ".gitignore"
     ],
     "options": [{
+        "title": "Advanced behaviour settings",
+        "type": "section",
+        "intro": "These settings are not exposed through the normal configuration interface and allow you to specify special settings for advanced use cases."
+    }, {
+        "title": "Trigger behaviour",
+        "ui_width": 4,
+        "name": "trigger",
+        "type": "select",
+        "options": [
+            ["next", "Enqueue next match"],
+            ["all", "Enqueue all matches"]
+        ],
+        "default": "next"
+    }, {
+        "title": "Force schedule reset",
+        "ui_width": 8,
+        "name": "reset_mode",
+        "type": "select",
+        "options": [
+            ["none", "Never"],
+            ["config", "On any config change"],
+            ["setup", "When switching from another setup"],
+            ["in_forever", "On config change when in 'forever trigger'"]
+        ],
+        "default": "none"
+    },
+
+    {
+        "title": "Raw configuration",
+        "type": "section",
+        "intro": "It's best to leave all the following configuration settings unchanged and to only use the default configuration interface to modify them. Click on the 'Schedule/Layout' area on the left to return to the normal user interface."
+    }, {
         "title": "Timezone",
         "ui_width": 4,
         "name": "timezone",
@@ -34,10 +66,10 @@
         "name": "rotation",
         "type": "select",
         "options": [
-            [0, "0"],
-            [90, "90"],
-            [180, "180"],
-            [270, "270"]
+            [0, "None"],
+            [90, "90 degree"],
+            [180, "180 degree"],
+            [270, "270 degree"]
         ],
         "default": 0
     }, {
@@ -93,16 +125,6 @@
         "name": "scratch",
         "type": "json",
         "default": {}
-    }, {
-        "title": "Trigger behaviour",
-        "ui_width": 4,
-        "name": "trigger",
-        "type": "select",
-        "options": [
-            ["next", "Show next match"],
-            ["all", "Enqueue all matches"]
-        ],
-        "default": "next"
     },
 
     {
