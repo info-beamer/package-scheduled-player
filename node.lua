@@ -1052,30 +1052,71 @@ local function TimeTile(asset, config, x1, y1, x2, y2)
 
     if clock_mode == "digital_clock" then
         local size = y2 - y1
-        local font, fmt
 
+        local font
         if clock_style == 1 then
             font = font_7seg
         else
             font = font_regl
         end
 
-        if clock_type == "hms" then
-            fmt = "%02d:%02d:%02d"
-        else
-            fmt = "%02d:%02d"
+        local formatter
+        if clock_type == "hm" then
+            formatter = function(t)
+                return string.format("%02d:%02d",
+                    math.floor(t / 3600),
+                    math.floor(t % 3600 / 60)
+                ), '99:99', ''
+            end
+        elseif clock_type == "hms" then
+            formatter = function(t)
+                return string.format("%02d:%02d:%02d",
+                    math.floor(t / 3600),
+                    math.floor(t % 3600 / 60),
+                    math.floor(t % 60)
+                ), '99:99:99', ''
+            end
+        elseif clock_type == "hm_12" then
+            formatter = function(t)
+                local hours = math.floor(t / 3600)
+                local minutes = math.floor(t % 3600 / 60)
+                local ampm = "am"
+                if hours >= 12 then
+                    ampm = "pm"
+                    hours = hours - 12
+                end
+                if hours == 0 then
+                    hours = 12
+                end
+                return string.format("%02d:%02d",
+                    hours, minutes
+                ), '99:99', ' '..ampm
+            end
+        elseif clock_type == "hms_12" then
+            formatter = function(t)
+                local hours = math.floor(t / 3600)
+                local minutes = math.floor(t % 3600 / 60)
+                local seconds = math.floor(t % 60)
+                local ampm = "am"
+                if hours >= 12 then
+                    ampm = "pm"
+                    hours = hours - 12
+                end
+                if hours == 0 then
+                    hours = 12
+                end
+                return string.format("%02d:%02d:%02d",
+                    hours, minutes, seconds
+                ), '99:99:99', ' '..ampm
+            end
         end
 
         return function(starts, ends)
             for now in helper.frame_between(starts, ends) do
-                local t = clock.since_midnight()
-                local time = string.format(fmt,
-                    math.floor(t / 3600),
-                    math.floor(t % 3600 / 60),
-                    math.floor(t % 60)
-                )
+                local time, tmpl, suffix = formatter(clock.since_midnight())
 
-                local w = font:width(time, size)
+                local w_time = font:width(tmpl, size)
+                local w = w_time + font:width(suffix, size)
 
                 local x
                 if clock_align == "left" then
@@ -1087,6 +1128,8 @@ local function TimeTile(asset, config, x1, y1, x2, y2)
                 end
 
                 font:write(x, y1, time, size, r,g,b,1)
+                x = x + w_time
+                font:write(x, y1, suffix, size, r,g,b,1)
             end
         end
     elseif clock_mode == "analog_clock" then
