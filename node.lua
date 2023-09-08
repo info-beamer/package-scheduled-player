@@ -1153,7 +1153,7 @@ local function TimeTile(asset, config, x1, y1, x2, y2)
             }
         end
 
-        local show_seconds = clock_type == "hms"
+        local show_seconds = clock_type == "hms" or clock_type == "hms_12"
 
         -- local function dots()
         --     gl.pushMatrix()
