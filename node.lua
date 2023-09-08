@@ -389,7 +389,11 @@ local schedule_clock = setmetatable({
     end,
 })
 node.event("config_updated", function(config)
-    schedule_clock.tz = config.timezone
+    if config.timezone == "device" then
+        schedule_clock.tz = config.__metadata.timezone
+    else
+        schedule_clock.tz = config.timezone
+    end
 end)
 
 local function clock_for_tz_or_default(tz)
