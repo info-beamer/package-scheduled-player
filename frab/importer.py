@@ -20,9 +20,14 @@ def get_schedule(url, group):
                 return u""
             return unicode(child.text)
         def parse_duration(value):
-            h, m = map(int, value.split(':'))
-            return timedelta(hours=h, minutes=m)
-
+            parts = map(int, value.split(':'))
+            if len(parts) == 3:
+                d, h, m = parts
+                return timedelta(days=d, hours=h, minutes=m)
+            elif len(parts) == 2:
+                h, m = parts
+                return timedelta(hours=h, minutes=m)
+            raise ValueError("invalid duration")
         def all_events():
             schedule = ET.fromstring(xml)
             for day in schedule.findall('day'):
