@@ -1555,8 +1555,13 @@ local function Scheduler(page_source, job_queue)
             ends = starts + duration
         end
 
+        local next_layer = {
+            back = -10,
+            front = 1,
+        }
+
         local tiles = page.get_tiles()
-        for _, tile in ipairs(tiles) do
+        for n, tile in ipairs(tiles) do
             local handler = ({
                 image = ImageTile,
                 video = VideoTile,
@@ -1568,6 +1573,15 @@ local function Scheduler(page_source, job_queue)
                 countdown = CountdownTile,
                 markup = MarkupTile,
             })[tile.type]
+
+            -- Reorder layering, so that layers back and front
+            -- layers are sorted by their tile order.
+            if tile.type == 'rawvideo' or tile.type == 'stream' then
+                local old_layer = tile.config.layer or 5
+                local next_layer_select = old_layer < 0 and "back" or "front"
+                tile.config.layer = next_layer[next_layer_select]
+                next_layer[next_layer_select] = next_layer[next_layer_select] + 1
+            end
 
             -- print "adding tile"
             job_queue.add(
