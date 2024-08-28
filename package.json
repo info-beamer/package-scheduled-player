@@ -3,12 +3,16 @@
     "author": "Florian Wesch <fw@info-beamer.com>",
     "desc": "A schedulable playlist player with custom pages, plugins and animations",
     "repository": "https://github.com/info-beamer/package-scheduled-player",
-    "version": "19",
+    "version": "20",
     "lifecycle": "production",
     "platforms": ["pi/epoch-1", "pi/epoch-2"],
     "runtime": {
         "outside_sources": true
     },
+    "embeddable_packages": [
+        "https://cdn.infobeamer.com/bulk/package-cef-browser/package.links",
+        "https://github.com/sophieschi/scheduled-plugin-mastodon"
+    ],
     "offline": {
         "support": "maybe",
         "info": "Playlists with time/date based scheduling require a correct system time"

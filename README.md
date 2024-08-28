@@ -118,10 +118,41 @@ This package can work offline, but only if some features are not used:
  * Anything using remote content will not work. This includes the browser,
  frab and streaming abilities.
 
+# Embeddable browser
+
+By default the browser bundled within this package uses the info-beamer
+backend to produce snapshots of the requested page. This allows you to
+render resource heavy websites even on older Pi devices that would be too
+slow to run a full featured browser locally. The downside is that content
+cannot be animated as it's basically just an image.
+
+Starting with the Pi4 you can now optionally use the
+[Embeddable Browser package](https://info-beamer.com/pkg/41861) to run
+a browser on the Pi itself. This allows you to render web content so it
+is always locally retrieved and fresh.
+
+Use this feature by clicking on the "Add package.." button on the left side
+of a setup configuration. In the drop down menu, select "Embeddable Browser".
+You can replace the suggested asset name and set it to "browser". This
+will result in the "Embeddable Browser" shadowing the default browser plugin
+so all existing webpages will use it instead without having to modify any
+other configuration. Alternatively you can keep the suggested name if you
+want to use both methods.
+
 ## Changelog
 
 Got feedback? Don't hesitate to get on contact with info-beamer support here:
 https://info-beamer.com/contact
+
+### Version 20
+
+ * Order multiple behind/front rawvideos by their config order
+ * Add support for embeddable browser: This allows you to replace
+   the snapshot based browser with the embeddable browser package. It allows
+   you render a page right on the device itself, so it updates in real time
+   and can request local resources the snapshot based browser cannot reach.
+   This feature requires a Pi4 or Pi5. See [here](#embeddablebrowser) for how
+   to use this feature.
 
 ### Version 19
 
