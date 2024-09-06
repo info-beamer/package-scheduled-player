@@ -711,7 +711,7 @@ Vue.component('schedule-panel', {
       var that = this;
       ib.assetChooser({
         filter: ['image', 'video'],
-        features: ['image2k', 'h264', 'hevc'],
+        features: ['image2k', 'image4k', 'h264', 'hevc'],
         no_node_assets: true,
         multi_select: true,
       }).then(function(selection) {
