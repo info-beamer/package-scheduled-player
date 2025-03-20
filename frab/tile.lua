@@ -82,7 +82,9 @@ function M.updated_schedule_json(new_schedule)
     schedule = new_schedule
     for idx = #schedule, 1, -1 do
         local talk = schedule[idx]
-        if not rooms[talk.place] then
+        
+        -- Ignore talks that are not in a room that we know of (if we know rooms)
+        if next(rooms) ~= nil and not rooms[talk.place] then
             table.remove(schedule, idx)
         else
             if talk.lang ~= "" and show_language_tags then
@@ -318,8 +320,15 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
             font, title_size, a.width - split_x
         )
 
+        local room_name = ""
+        if next(rooms) == nil then
+            room_name = "talk.place"
+        else
+            room_name = rooms[talk.place].name_short
+        end
+
         local info_lines = wrap(
-            rooms[talk.place].name_short .. talk.speaker_intro,
+            room_name .. talk.speaker_intro,
             font, info_size, a.width - split_x
         )
 
@@ -462,8 +471,15 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
             font, title_size, a.width - split_x
         )
 
+        local room_name = ""
+        if next(rooms) == nil then
+            room_name = "talk.place"
+        else
+            room_name = rooms[talk.place].name_short
+        end
+
         local info_lines = wrap(
-            rooms[talk.place].name_short .. talk.speaker_intro,
+            room_name .. talk.speaker_intro,
             font, info_size, a.width - split_x
         )
 
